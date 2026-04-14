@@ -1317,41 +1317,51 @@ async function startRecording(id){
       const transcript=stopTranscript(id);
       const blob=new Blob(chunks,{type:mimeType||'audio/webm'});
       const date=new Date().toLocaleString('en-CA',{year:'numeric',month:'short',day:'numeric',hour:'2-digit',minute:'2-digit'});
-      const blobUrl=URL.createObjectURL(blob);
 
-      // Save to local IDB immediately so it shows up right away
-      await saveRecordingIDB(id, blobUrl, date, transcript||'');
-      await renderRecordingsForQuote(id);
-      toast('Recording saved locally — uploading…');
-
-      // Reset button right away
+      // Reset button immediately
+      stream.getTracks().forEach(t=>t.stop());
+      delete activeRecorders[id];
       const b=document.getElementById('rec-btn-'+id);
       if(b){b.className='rec-btn';b.innerHTML='<span class="rec-dot"></span> Record voice note';b.style.cssText='';}
       const timerEl=document.getElementById('rec-timer-'+id);
       if(timerEl)timerEl.style.display='none';
 
-      stream.getTracks().forEach(t=>t.stop());
-      delete activeRecorders[id];
-
-      // Upload to Cloudinary in background for cross-device access
-      const cloudUrl = await uploadAudioToCloud(blob);
-      URL.revokeObjectURL(blobUrl);
-
-      // Save reference to quote with cloud URL
+      // Show temp local playback while uploading
+      const tempUrl=URL.createObjectURL(blob);
       const q=quotes.find(x=>x.id===id);
       if(q){
         if(!q.recMeta)q.recMeta=[];
-        q.recMeta.push({id:'r'+Date.now(), date, transcript:transcript||'', cloudUrl:cloudUrl||''});
+        q.recMeta.push({id:'r'+Date.now(), date, transcript:transcript||'', cloudUrl:'', tempUrl});
         if(q.recMeta.length>20)q.recMeta=q.recMeta.slice(-20);
-        save();
       }
+      await renderRecordingsForQuote(id);
+      toast('⏫ Uploading recording…');
+
+      // Upload to Cloudinary — this is the permanent storage
+      const cloudUrl = await uploadAudioToCloud(blob);
 
       if(cloudUrl){
-        toast('✓ Recording synced to cloud');
-        await renderRecordingsForQuote(id); // re-render to show cloud badge
+        // Replace temp entry with cloud URL
+        if(q&&q.recMeta){
+          const entry = q.recMeta.find(m=>m.date===date);
+          if(entry){ entry.cloudUrl=cloudUrl; entry.tempUrl=''; }
+        }
+        save(); // saves recMeta with cloudUrl to localStorage + syncs to cloud
+        await renderRecordingsForQuote(id);
+        toast('✓ Recording saved & synced');
       } else {
-        toast('Recording saved locally only');
+        // Cloudinary failed — save blob to IDB as fallback
+        const blobUrl=URL.createObjectURL(blob);
+        await saveRecordingIDB(id, blobUrl, date, transcript||'');
+        if(q&&q.recMeta){
+          const entry = q.recMeta.find(m=>m.date===date);
+          if(entry) entry.tempUrl='idb'; // mark as IDB-only
+        }
+        save();
+        await renderRecordingsForQuote(id);
+        toast('Recording saved locally (no internet)');
       }
+      URL.revokeObjectURL(tempUrl);
     };
     mr.start(); // no timeslice — required for iOS Safari compatibility
     activeRecorders[id]={mr,startTime:Date.now()};
@@ -2039,24 +2049,36 @@ async function deleteRecordingIDB(id){
 async function renderRecordingsForQuote(quoteId){
   const el=document.getElementById('recs-'+quoteId);
   if(!el)return;
-  let recs = [];
-  try{ recs = await getRecordingsIDB(quoteId); }catch(e){}
   const q = quotes.find(x=>x.id===quoteId);
   const meta = (q&&q.recMeta)||[];
-  // Enrich local recs with transcript + cloudUrl from meta
-  const localDates = new Set(recs.map(r=>r.date));
-  recs = recs.map(r=>{
-    const m = meta.find(m=>m.date===r.date);
-    if(m){ r.transcript=r.transcript||m.transcript||''; r.cloudUrl=m.cloudUrl||''; }
-    return r;
+
+  // Primary source: recMeta (persists across devices via cloud sync)
+  // Each entry has cloudUrl (permanent) or tempUrl (temporary local)
+  let recs = meta.map(m=>({
+    id: m.id, quoteId,
+    cloudUrl: m.cloudUrl||'',
+    tempUrl: m.tempUrl||'',
+    blobUrl: m.cloudUrl||m.tempUrl||'',
+    date: m.date,
+    transcript: m.transcript||'',
+    fromCloud: !!m.cloudUrl
+  }));
+
+  // Also check IDB for any recordings not in recMeta (fallback)
+  let idbRecs = [];
+  try{ idbRecs = await getRecordingsIDB(quoteId); }catch(e){}
+  const metaDates = new Set(meta.map(m=>m.date));
+  idbRecs.filter(r=>!metaDates.has(r.date)).forEach(r=>{
+    recs.push({id:r.id, quoteId, blobUrl:'', blob:r.blob, date:r.date, transcript:r.transcript||''});
   });
-  // Add cloud-only recordings from other devices (not in local IDB)
-  meta.filter(m=>m.cloudUrl && !localDates.has(m.date)).forEach(m=>{
-    recs.push({id:'cloud_'+m.id, quoteId, blobUrl:m.cloudUrl, date:m.date, transcript:m.transcript||'', fromCloud:true});
-  });
+
   recs.sort((a,b)=>new Date(a.date)-new Date(b.date));
   el.innerHTML=recs.map(r=>{
-    const url=r.blobUrl || (r.blob ? URL.createObjectURL(r.blob) : '');
+    // Get best available URL: cloud > tempUrl > IDB blob
+    const url = (r.cloudUrl && r.cloudUrl!=='') ? r.cloudUrl 
+              : r.tempUrl && r.tempUrl!=='idb' && r.tempUrl!=='' ? r.tempUrl
+              : r.blobUrl ? r.blobUrl
+              : r.blob ? URL.createObjectURL(r.blob) : '';
     const hasT = r.transcript && r.transcript.trim();
     // escape for inline onclick attribute
     const safeT = hasT ? r.transcript.replace(/\\/g,'\\\\').replace(/'/g,"\\'").replace(/\n/g,'\\n') : '';
