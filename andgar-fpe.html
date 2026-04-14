@@ -617,7 +617,16 @@ async function cloudSet(data){
 }
 
 function getSyncData(){
-  return { quotes, settings, ints, passes:JSON.parse(localStorage.getItem('af_passes')||'{}') };
+  const deletedRecs = JSON.parse(localStorage.getItem('af_deleted_recs')||'[]');
+  return { quotes, settings, ints, passes:JSON.parse(localStorage.getItem('af_passes')||'{}'), deletedRecs };
+}
+
+function markRecDeleted(id){
+  const deleted = JSON.parse(localStorage.getItem('af_deleted_recs')||'[]');
+  if(!deleted.includes(id)) deleted.push(id);
+  // Keep last 200 deleted IDs
+  if(deleted.length>200) deleted.splice(0, deleted.length-200);
+  localStorage.setItem('af_deleted_recs', JSON.stringify(deleted));
 }
 
 function scheduleSyncPush(){
@@ -652,12 +661,19 @@ async function syncFromCloud(){
     // Merge by id — use id as unique key (more reliable than date string)
     const byId = new Map();
     cloudMeta.forEach(m => byId.set(m.id, m));
+    const deletedRecs = JSON.parse(localStorage.getItem('af_deleted_recs')||'[]');
+    // Also absorb deletedRecs from cloud data
+    const cloudDeleted = data.deletedRecs||[];
+    const allDeleted = new Set([...deletedRecs, ...cloudDeleted]);
+    // Save merged deleted list locally
+    localStorage.setItem('af_deleted_recs', JSON.stringify(Array.from(allDeleted)));
+
     localMeta.forEach(m => {
+      if(allDeleted.has(m.id)) return; // skip — was deleted
       if(!byId.has(m.id)){
         byId.set(m.id, m);
-        needsPush = true; // local has something cloud doesn't — push back
+        needsPush = true;
       } else {
-        // Prefer whichever has a cloudUrl
         const existing = byId.get(m.id);
         if(!existing.cloudUrl && m.cloudUrl){
           byId.set(m.id, {...existing, ...m});
@@ -665,6 +681,8 @@ async function syncFromCloud(){
         }
       }
     });
+    // Remove any cloud entries that were deleted locally
+    allDeleted.forEach(did => byId.delete(did));
     const merged = Array.from(byId.values());
     return {...cq, recMeta: merged};
   });
@@ -695,11 +713,18 @@ async function syncFromCloud(){
 
 // Re-sync every time app becomes visible — tab click, app switch, phone wake
 let lastSync = 0;
+let syncLocked = false; // when true, NO sync allowed (after delete/save)
+let syncLockTimer = null;
+
+function lockSync(ms=30000){
+  syncLocked = true;
+  clearTimeout(syncLockTimer);
+  syncLockTimer = setTimeout(()=>{ syncLocked=false; }, ms);
+}
 async function syncIfNeeded(){
-  if(!currentUser) return;
+  if(!currentUser || syncLocked) return;
   const now = Date.now();
-  if(now < lastSync) return; // locked (e.g. after a delete)
-  if(now - lastSync < 3000) return; // throttle: max once per 3 seconds
+  if(now - lastSync < 3000) return;
   lastSync = now;
   await syncFromCloud();
 }
@@ -707,7 +732,7 @@ document.addEventListener('visibilitychange', ()=>{ if(document.visibilityState=
 window.addEventListener('focus', syncIfNeeded);
 window.addEventListener('pageshow', syncIfNeeded); // iOS Safari tab restore
 // Auto-sync every 60 seconds
-setInterval(()=>{ if(currentUser) syncFromCloud(); }, 60000);
+setInterval(()=>{ if(currentUser && !syncLocked) syncFromCloud(); }, 60000);
 
 // ── Local storage ─────────────────────────────────────────────────────────
 function load(){
@@ -1367,8 +1392,8 @@ async function startRecording(id){
         }
         // Save locally then push to cloud immediately — block auto-sync for 10s
         try{ localStorage.setItem('af_q',JSON.stringify(quotes)); }catch(e){}
+        lockSync(15000);
         clearTimeout(syncTimer);
-        lastSync = Date.now() + 10000;
         await cloudSet(getSyncData());
         await renderRecordingsForQuote(id);
         toast('✓ Recording saved & synced');
@@ -1537,11 +1562,10 @@ async function deleteQuote(id){
   expandedIds.delete(id);
   clearNtfy(id);
   try{ localStorage.setItem('af_q',JSON.stringify(quotes)); }catch(e){}
-  // Block ALL syncing for 30 seconds and push deletion to cloud
+  lockSync(60000); // block sync for 60 seconds after delete
   clearTimeout(syncTimer);
-  lastSync = Date.now() + 30000;
   await cloudSet(getSyncData());
-  updateSyncBadge('✓ Synced');
+  updateSyncBadge('✓ Deleted & synced');
   renderList();
   renderCalendar();
   toast('Deleted');
@@ -2137,15 +2161,18 @@ async function delRecIDB(id, quoteId){
 
   // Remove from recMeta — handle both 'cloud_rXXX' and 'rXXX' formats
   const q = quotes.find(x=>x.id===quoteId);
+  const cleanId = id.startsWith('cloud_') ? id.slice(6) : id;
   if(q && q.recMeta){
-    const cleanId = id.startsWith('cloud_') ? id.slice(6) : id;
     q.recMeta = q.recMeta.filter(m=>m.id!==id && m.id!==cleanId);
   }
+  // Mark as deleted so sync merge never restores it
+  markRecDeleted(id);
+  markRecDeleted(cleanId);
 
-  // Push deletion to cloud immediately, block sync for 15s
+  // Push deletion to cloud immediately, block sync for 30s
   try{ localStorage.setItem('af_q',JSON.stringify(quotes)); }catch(e){}
+  lockSync(30000);
   clearTimeout(syncTimer);
-  lastSync = Date.now() + 15000;
   await cloudSet(getSyncData());
 
   await renderRecordingsForQuote(quoteId);
