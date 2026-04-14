@@ -162,7 +162,7 @@ body{font-family:'Sora',sans-serif;background:var(--bg);color:var(--text);min-he
 .rec-bar{display:flex;align-items:center;gap:8px;margin-top:8px;flex-wrap:wrap}
 .rec-btn{display:flex;align-items:center;gap:7px;font-family:'Sora',sans-serif;font-size:13px;font-weight:500;padding:9px 16px;border-radius:20px;border:1px solid var(--border2);background:var(--surface);color:var(--text2);cursor:pointer;transition:all .15s}
 .rec-btn:hover{background:var(--surface2)}
-.rec-btn.recording{background:var(--red-bg);color:var(--red-txt);border-color:var(--red-txt);animation:pulse 1s infinite}
+.rec-btn.recording{background:var(--red-bg)!important;color:var(--red-txt)!important;border-color:var(--red-txt)!important;animation:pulse 1s infinite}
 @keyframes pulse{0%,100%{opacity:1}50%{opacity:.6}}
 .rec-dot{width:8px;height:8px;border-radius:50%;background:currentColor;flex-shrink:0}
 .recordings-list{margin-top:10px;display:flex;flex-direction:column;gap:6px}
@@ -789,8 +789,8 @@ function buildCard(q){
       </div>
     </div>
     <div class="qbody ${isOpen?'open':''}">
-      ${(q.keyword&&hasDesign)?`<div class="design-row"><span class="keyword-badge">${q.keyword}</span><a class="design-link" href="${q.designUrl}" target="_blank">&#9670; Designs</a></div>`:
-        q.keyword?`<div class="design-row"><span class="keyword-badge">${q.keyword}</span>${hasDesign?`<a class="design-link" href="${q.designUrl}" target="_blank">&#9670; Designs</a>`:''}</div>`:''}
+      ${(q.keyword&&hasDesign)?`<div class="design-row"><span class="keyword-badge">${q.keyword}</span><a class="design-link" href="${q.designUrl.match(/^https?:\/\//)?q.designUrl:'https://'+q.designUrl}" target="_blank">&#9670; Designs</a></div>`:
+        q.keyword?`<div class="design-row"><span class="keyword-badge">${q.keyword}</span>${hasDesign?`<a class="design-link" href="${q.designUrl.match(/^https?:\/\//)?q.designUrl:'https://'+q.designUrl}" target="_blank">&#9670; Designs</a>`:''}</div>`:''}
 
       <div class="dates-row">
         <div class="date-field">
@@ -1226,80 +1226,107 @@ let activeRecorders={};
 const activeTranscripts = {};
 
 function toggleRecording(id){
-  if(activeRecorders[id]){ stopRecording(id); stopTranscript(id); }
-  else { startRecording(id); startTranscript(id); }
+  if(activeRecorders[id]){ stopRecording(id); }
+  else { startRecording(id); }
 }
 
 function startTranscript(id){
   const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-  if(!SpeechRecognition) return; // silently skip if not supported
-  const recog = new SpeechRecognition();
-  recog.continuous = true;
-  recog.interimResults = true;
-  recog.lang = 'en-US';
-  let finalText = '';
-  recog.onresult = (e) => {
-    for(let i=e.resultIndex;i<e.results.length;i++){
-      if(e.results[i].isFinal) finalText += e.results[i][0].transcript + ' ';
-    }
-    if(activeTranscripts[id]) activeTranscripts[id]._text = finalText;
-  };
-  recog.onerror = () => {};
-  recog.onend = () => { if(activeTranscripts[id]===recog) recog.start(); };
-  recog.start();
-  recog._text = '';
-  activeTranscripts[id] = recog;
+  if(!SpeechRecognition) return;
+  try{
+    const recog = new SpeechRecognition();
+    recog.continuous = true;
+    recog.interimResults = false;
+    recog.lang = 'en-US';
+    recog._final = '';
+    recog.onresult = (e) => {
+      for(let i=e.resultIndex;i<e.results.length;i++){
+        if(e.results[i].isFinal) recog._final += e.results[i][0].transcript + ' ';
+      }
+    };
+    recog.onerror = ()=>{};
+    recog.onend = ()=>{ if(activeTranscripts[id]===recog){ try{recog.start();}catch(e){} } };
+    recog.start();
+    activeTranscripts[id] = recog;
+  }catch(e){}
 }
 
 function stopTranscript(id){
   const recog = activeTranscripts[id];
-  if(!recog) return;
+  if(!recog) return '';
   recog.onend = null;
-  recog.stop();
-  const text = (recog._text||'').trim();
+  const text = (recog._final||'').trim();
+  try{ recog.stop(); }catch(e){}
   delete activeTranscripts[id];
-  if(text){
-    // Store transcript on the recording (attached at save time via _pendingTranscript)
-    activeTranscripts['_pending_'+id] = text;
-  }
+  return text;
 }
+
 async function startRecording(id){
+  // Turn button red IMMEDIATELY before async ops
+  const btn=document.getElementById('rec-btn-'+id);
+  if(btn){
+    btn.className='rec-btn recording';
+    btn.innerHTML='<span class="rec-dot"></span> ⏺ Recording…';
+    btn.style.cssText='background:var(--red-bg)!important;color:var(--red-txt)!important;border-color:var(--red-txt)!important';
+  }
   try{
+    // Get a fresh stream (reuses permission already granted on login)
     const stream=await navigator.mediaDevices.getUserMedia({audio:true});
-    const mr=new MediaRecorder(stream);
+    const mimeType=MediaRecorder.isTypeSupported('audio/webm')?'audio/webm':'audio/mp4';
+    const mr=new MediaRecorder(stream,{mimeType});
     const chunks=[];
-    mr.ondataavailable=e=>chunks.push(e.data);
+    mr.ondataavailable=e=>{if(e.data&&e.data.size>0)chunks.push(e.data);};
     mr.onstop=async ()=>{
-      const blob=new Blob(chunks,{type:'audio/webm'});
-      const blobUrl=URL.createObjectURL(blob);
+      const transcript=stopTranscript(id);
+      const blob=new Blob(chunks,{type:mimeType});
       const date=new Date().toLocaleString('en-CA',{year:'numeric',month:'short',day:'numeric',hour:'2-digit',minute:'2-digit'});
-      const pendingKey='_pending_'+id;
-      const transcript = activeTranscripts[pendingKey]||'';
-      delete activeTranscripts[pendingKey];
-      await saveRecordingIDB(id, blobUrl, date, transcript);
+      const blobUrl=URL.createObjectURL(blob);
+
+      await saveRecordingIDB(id, blobUrl, date, transcript||'');
+
+      await new Promise(resolve=>{
+        const reader=new FileReader();
+        reader.onload=()=>{
+          const q=quotes.find(x=>x.id===id);
+          if(q){
+            if(!q.recordings)q.recordings=[];
+            q.recordings.push({id:'r'+Date.now(),date,transcript:transcript||'',audio:reader.result});
+            if(q.recordings.length>5)q.recordings=q.recordings.slice(-5);
+            save();
+          }
+          resolve();
+        };
+        reader.onerror=resolve;
+        reader.readAsDataURL(blob);
+      });
+
       URL.revokeObjectURL(blobUrl);
       stream.getTracks().forEach(t=>t.stop());
       delete activeRecorders[id];
-      const btn=document.getElementById('rec-btn-'+id);
-      if(btn){btn.className='rec-btn';btn.innerHTML='<span class="rec-dot"></span> Record voice note';}
+
+      const b=document.getElementById('rec-btn-'+id);
+      if(b){b.className='rec-btn';b.innerHTML='<span class="rec-dot"></span> Record voice note';b.style.cssText='';}
       const timerEl=document.getElementById('rec-timer-'+id);
       if(timerEl)timerEl.style.display='none';
-      renderRecordingsForQuote(id);
+
+      await renderRecordingsForQuote(id);
+      toast('Recording saved');
     };
-    mr.start();
+    mr.start(500);
     activeRecorders[id]={mr,startTime:Date.now()};
-    const btn=document.getElementById('rec-btn-'+id);
-    if(btn){btn.className='rec-btn recording';btn.innerHTML='<span class="rec-dot"></span> Stop recording';}
+    startTranscript(id);
     const timerEl=document.getElementById('rec-timer-'+id);
     if(timerEl)timerEl.style.display='inline';
-    // Tick timer
     activeRecorders[id].timerInterval=setInterval(()=>{
       if(!activeRecorders[id])return;
       const s=Math.floor((Date.now()-activeRecorders[id].startTime)/1000);
       const el=document.getElementById('rec-timer-'+id);
-      if(el)el.textContent=`${Math.floor(s/60)}:${String(s%60).padStart(2,'0')}`;
+      if(el)el.textContent=Math.floor(s/60)+':'+String(s%60).padStart(2,'0');
     },1000);
-  } catch(e){toast('Microphone access denied');}
+  }catch(e){
+    if(btn){btn.className='rec-btn';btn.innerHTML='<span class="rec-dot"></span> Record voice note';btn.style.cssText='';}
+    toast('Microphone access denied');
+  }
 }
 function stopRecording(id){
   if(!activeRecorders[id])return;
@@ -1415,7 +1442,7 @@ function saveQuote(){
     amount:document.getElementById('f-amount').value,
     keyword:document.getElementById('f-keyword').value.trim().toUpperCase(),
     desc:document.getElementById('f-desc').value.trim(),
-    designUrl:document.getElementById('f-designurl').value.trim(),
+    designUrl:(()=>{let u=document.getElementById('f-designurl').value.trim();if(u&&!u.match(/^https?:\/\//))u='https://'+u;return u;})(),
     status:document.getElementById('f-status').value,
     contacts:[],
     startDate:document.getElementById('f-start').value,
@@ -1486,35 +1513,166 @@ function generatePDF(id){
   const q=quotes.find(x=>x.id===id);if(!q)return;
   const {jsPDF}=window.jspdf;
   const doc=new jsPDF({unit:'mm',format:'a4'});
-  const W=210,margin=20;let y=0;
-  doc.setFillColor(26,26,24);doc.rect(0,0,W,44,'F');
-  doc.setFont('helvetica','bold');doc.setFontSize(18);doc.setTextColor(245,244,240);
-  doc.text(settings.biz||'ANDGAR FPE',margin,18);
-  doc.setFont('helvetica','normal');doc.setFontSize(9);doc.setTextColor(160,160,150);
-  doc.text('QUOTATION',margin,27);
-  doc.setFont('helvetica','bold');doc.setFontSize(11);doc.setTextColor(245,244,240);
-  doc.text(q.number,W-margin,18,{align:'right'});
-  doc.setFont('helvetica','normal');doc.setFontSize(9);doc.setTextColor(160,160,150);
-  doc.text('Date: '+fmtDate(q.created),W-margin,26,{align:'right'});
-  y=58;
-  doc.setFont('helvetica','bold');doc.setFontSize(9);doc.setTextColor(140,138,130);doc.text('PREPARED FOR',margin,y);y+=6;
-  doc.setFont('helvetica','bold');doc.setFontSize(14);doc.setTextColor(26,26,24);doc.text(q.client,margin,y);y+=7;
-  doc.setFont('helvetica','normal');doc.setFontSize(10);doc.setTextColor(90,90,86);
-  (q.contacts||[]).forEach(c=>{
-    const line=[c.name,c.email,c.phone].filter(Boolean).join(' | ');
-    doc.text(line,margin,y);y+=5;
+  const W=210, M=18, RW=W-M*2;
+  const navy=[13,27,42], green=[46,204,113], grey=[100,100,100], light=[245,245,245], mid=[220,220,220], dark=[30,30,30];
+  let y=0;
+
+  // ── Header bar ───────────────────────────────────────────────────────────
+  doc.setFillColor(...navy); doc.rect(0,0,W,50,'F');
+  // Green accent stripe
+  doc.setFillColor(...green); doc.rect(0,46,W,4,'F');
+
+  // Company name
+  doc.setFont('helvetica','bold'); doc.setFontSize(22); doc.setTextColor(255,255,255);
+  doc.text(settings.biz||'ANDGAR FPE', M, 22);
+  // Subtitle
+  doc.setFont('helvetica','normal'); doc.setFontSize(9); doc.setTextColor(160,185,200);
+  doc.text('Food Processing Equipment', M, 30);
+  // Contact info in header
+  if(settings.phone){ doc.setFontSize(8); doc.text(settings.phone, M, 38); }
+  if(settings.email){ doc.setFontSize(8); doc.text(settings.email, settings.phone?M+40:M, 38); }
+
+  // QUOTATION label + number (right side)
+  doc.setFont('helvetica','bold'); doc.setFontSize(28); doc.setTextColor(255,255,255);
+  doc.text('QUOTATION', W-M, 20, {align:'right'});
+  doc.setFont('helvetica','normal'); doc.setFontSize(11); doc.setTextColor(46,204,113);
+  doc.text(q.number, W-M, 30, {align:'right'});
+  doc.setFontSize(9); doc.setTextColor(160,185,200);
+  doc.text('Date: '+fmtDate(q.created), W-M, 38, {align:'right'});
+
+  y=60;
+
+  // ── Two column info block ─────────────────────────────────────────────
+  // Left: Prepared for
+  doc.setFont('helvetica','bold'); doc.setFontSize(8); doc.setTextColor(...grey);
+  doc.text('PREPARED FOR', M, y);
+  y+=5;
+  doc.setFont('helvetica','bold'); doc.setFontSize(14); doc.setTextColor(...dark);
+  doc.text(q.client, M, y); y+=6;
+  doc.setFont('helvetica','normal'); doc.setFontSize(9); doc.setTextColor(...grey);
+  (q.contacts||[]).slice(0,3).forEach(c=>{
+    if(c.name){ doc.setFont('helvetica','bold'); doc.setTextColor(...dark); doc.text(c.name, M, y); doc.setFont('helvetica','normal'); doc.setTextColor(...grey); y+=4.5; }
+    if(c.email){ doc.text(c.email, M, y); y+=4.5; }
+    if(c.phone){ doc.text(c.phone, M, y); y+=4.5; }
   });
-  if(q.startDate){doc.text('Start: '+fmtDate(q.startDate),margin,y);y+=5;}
-  if(q.endDate){doc.text('Completion: '+fmtDate(q.endDate),W-margin,y-5,{align:'right'});}
-  if(q.keyword){doc.setFont('helvetica','bold');doc.setFontSize(9);doc.setTextColor(60,52,137);doc.text('# '+q.keyword,W-margin,y,{align:'right'});y+=2;}
-  y+=5;doc.setDrawColor(200,198,190);doc.setLineWidth(.3);doc.line(margin,y,W-margin,y);y+=10;
-  if(q.desc){doc.setFont('helvetica','bold');doc.setFontSize(9);doc.setTextColor(140,138,130);doc.text('SCOPE',margin,y);y+=6;doc.setFont('helvetica','normal');doc.setFontSize(11);doc.setTextColor(26,26,24);const ls=doc.splitTextToSize(q.desc,W-margin*2);doc.text(ls,margin,y);y+=ls.length*6+8;}
-  doc.setFillColor(230,228,220);doc.rect(margin,y,W-margin*2,8,'F');doc.setFont('helvetica','bold');doc.setFontSize(9);doc.setTextColor(26,26,24);doc.text('DESCRIPTION',margin+4,y+5.5);doc.text('AMOUNT',W-margin-4,y+5.5,{align:'right'});y+=8;
-  doc.setFillColor(255,255,255);doc.rect(margin,y,W-margin*2,12,'F');doc.setFont('helvetica','normal');doc.setFontSize(10);doc.setTextColor(26,26,24);doc.text((q.desc||'Professional services').substring(0,60),margin+4,y+8);doc.setFont('helvetica','bold');doc.text('$'+Number(q.amount||0).toLocaleString('en-CA',{minimumFractionDigits:2}),W-margin-4,y+8,{align:'right'});y+=12;
-  doc.setFillColor(26,26,24);doc.rect(margin,y,W-margin*2,12,'F');doc.setFont('helvetica','bold');doc.setFontSize(10);doc.setTextColor(245,244,240);doc.text('TOTAL',margin+4,y+8);doc.text('$'+Number(q.amount||0).toLocaleString('en-CA',{minimumFractionDigits:2}),W-margin-4,y+8,{align:'right'});y+=20;
-  if(q.notes){doc.setFont('helvetica','bold');doc.setFontSize(9);doc.setTextColor(140,138,130);doc.text('NOTES',margin,y);y+=6;doc.setFont('helvetica','normal');doc.setFontSize(10);doc.setTextColor(90,90,86);const nl=doc.splitTextToSize(q.notes,W-margin*2);doc.text(nl,margin,y);y+=nl.length*5+8;}
-  doc.setFillColor(26,26,24);doc.rect(0,282,W,15,'F');doc.setFont('helvetica','normal');doc.setFontSize(8);doc.setTextColor(140,138,130);doc.text('Generated by ANDGAR FPE  ·  '+new Date().toLocaleDateString('en-CA'),margin,290);
-  if(settings.email)doc.text(settings.email,W-margin,290,{align:'right'});
+
+  // Right: Quote details box
+  const bx=W-M-70, bw=70;
+  doc.setFillColor(...light); doc.roundedRect(bx, 60, bw, 38, 2, 2, 'F');
+  doc.setFont('helvetica','bold'); doc.setFontSize(8); doc.setTextColor(...grey);
+  const details = [
+    ['Quote #', q.number],
+    ['Date', fmtDate(q.created)],
+    ['Status', STAGES[q.status]?.label||q.status],
+    q.startDate?['Start', fmtDate(q.startDate)]:null,
+    q.endDate?['Completion', fmtDate(q.endDate)]:null,
+    q.keyword?['Reference', q.keyword]:null,
+  ].filter(Boolean);
+  let dy=66;
+  details.forEach(([label,val])=>{
+    doc.setFont('helvetica','bold'); doc.setTextColor(...grey); doc.text(label+':', bx+4, dy);
+    doc.setFont('helvetica','normal'); doc.setTextColor(...dark); doc.text(String(val), bx+bw-4, dy, {align:'right'});
+    dy+=6;
+  });
+
+  y=106;
+  // ── Divider ───────────────────────────────────────────────────────────
+  doc.setDrawColor(...mid); doc.setLineWidth(0.3); doc.line(M, y, W-M, y); y+=10;
+
+  // ── Scope / Description ───────────────────────────────────────────────
+  if(q.desc){
+    doc.setFont('helvetica','bold'); doc.setFontSize(8); doc.setTextColor(...grey);
+    doc.text('SCOPE OF WORK', M, y); y+=6;
+    doc.setFont('helvetica','normal'); doc.setFontSize(10); doc.setTextColor(...dark);
+    const ls=doc.splitTextToSize(q.desc, RW);
+    doc.text(ls, M, y); y+=ls.length*5.5+10;
+  }
+
+  // ── Line items table ──────────────────────────────────────────────────
+  // Table header
+  doc.setFillColor(...navy); doc.rect(M, y, RW, 9, 'F');
+  doc.setFont('helvetica','bold'); doc.setFontSize(9); doc.setTextColor(255,255,255);
+  doc.text('ITEM DESCRIPTION', M+4, y+6);
+  doc.text('QTY', M+RW*0.62, y+6, {align:'center'});
+  doc.text('UNIT', M+RW*0.76, y+6, {align:'center'});
+  doc.text('AMOUNT', M+RW-4, y+6, {align:'right'});
+  y+=9;
+
+  // Single line item row
+  doc.setFillColor(255,255,255); doc.rect(M, y, RW, 14, 'F');
+  doc.setDrawColor(...mid); doc.setLineWidth(0.2); doc.rect(M, y, RW, 14, 'S');
+  doc.setFont('helvetica','normal'); doc.setFontSize(10); doc.setTextColor(...dark);
+  const desc=(q.desc||'Professional Services').substring(0,55);
+  doc.text(desc, M+4, y+9);
+  doc.text('1', M+RW*0.62, y+9, {align:'center'});
+  doc.text('Lump Sum', M+RW*0.76, y+9, {align:'center'});
+  doc.setFont('helvetica','bold');
+  doc.text('$'+Number(q.amount||0).toLocaleString('en-CA',{minimumFractionDigits:2}), M+RW-4, y+9, {align:'right'});
+  y+=14;
+
+  // Subtotal rows
+  const subtotalY = y;
+  doc.setFillColor(...light); doc.rect(M+RW*0.55, y, RW*0.45, 8, 'F');
+  doc.setFont('helvetica','normal'); doc.setFontSize(9); doc.setTextColor(...grey);
+  doc.text('Subtotal', M+RW*0.57, y+5.5);
+  doc.setTextColor(...dark);
+  doc.text('$'+Number(q.amount||0).toLocaleString('en-CA',{minimumFractionDigits:2}), M+RW-4, y+5.5, {align:'right'});
+  y+=8;
+
+  doc.setFillColor(...light); doc.rect(M+RW*0.55, y, RW*0.45, 8, 'F');
+  doc.setFont('helvetica','normal'); doc.setFontSize(9); doc.setTextColor(...grey);
+  doc.text('Tax (0%)', M+RW*0.57, y+5.5);
+  doc.setTextColor(...dark); doc.text('$0.00', M+RW-4, y+5.5, {align:'right'});
+  y+=8;
+
+  // Total row
+  doc.setFillColor(...navy); doc.rect(M+RW*0.55, y, RW*0.45, 11, 'F');
+  doc.setFont('helvetica','bold'); doc.setFontSize(11); doc.setTextColor(255,255,255);
+  doc.text('TOTAL', M+RW*0.57, y+7.5);
+  doc.setTextColor(...green);
+  doc.text('$'+Number(q.amount||0).toLocaleString('en-CA',{minimumFractionDigits:2}), M+RW-4, y+7.5, {align:'right'});
+  y+=20;
+
+  // ── Notes ─────────────────────────────────────────────────────────────
+  if(q.notes&&q.notes.trim()){
+    doc.setFont('helvetica','bold'); doc.setFontSize(8); doc.setTextColor(...grey);
+    doc.text('NOTES & CONDITIONS', M, y); y+=5;
+    doc.setFillColor(...light); 
+    const nl=doc.splitTextToSize(q.notes, RW-8);
+    doc.rect(M, y, RW, nl.length*5+8, 'F');
+    doc.setFont('helvetica','normal'); doc.setFontSize(9); doc.setTextColor(...dark);
+    doc.text(nl, M+4, y+6); y+=nl.length*5+16;
+  }
+
+  // ── Terms ─────────────────────────────────────────────────────────────
+  if(y<230){
+    doc.setFont('helvetica','bold'); doc.setFontSize(8); doc.setTextColor(...grey);
+    doc.text('TERMS & CONDITIONS', M, y); y+=5;
+    doc.setFont('helvetica','normal'); doc.setFontSize(8); doc.setTextColor(...grey);
+    const terms='This quotation is valid for 30 days from the date of issue. A 50% deposit is required to commence work. Final payment is due upon completion. Prices are subject to change if scope changes.';
+    const tl=doc.splitTextToSize(terms, RW);
+    doc.text(tl, M, y); y+=tl.length*4.5+8;
+
+    // Signature block
+    doc.setDrawColor(...mid); doc.setLineWidth(0.3);
+    doc.line(M, y+15, M+70, y+15);
+    doc.line(W-M-70, y+15, W-M, y+15);
+    doc.setFont('helvetica','normal'); doc.setFontSize(8); doc.setTextColor(...grey);
+    doc.text('Authorized Signature', M, y+20);
+    doc.text('Client Acceptance', W-M-70, y+20);
+    doc.text('Date: _______________', W-M-70, y+26);
+  }
+
+  // ── Footer ────────────────────────────────────────────────────────────
+  doc.setFillColor(...navy); doc.rect(0,277,W,20,'F');
+  doc.setFillColor(...green); doc.rect(0,277,W,2,'F');
+  doc.setFont('helvetica','normal'); doc.setFontSize(8); doc.setTextColor(160,185,200);
+  doc.text(settings.biz||'ANDGAR FPE', M, 285);
+  if(settings.phone) doc.text(settings.phone, W/2, 285, {align:'center'});
+  if(settings.email) doc.text(settings.email, W-M, 285, {align:'right'});
+  doc.setTextColor(100,120,140);
+  doc.text('Thank you for your business.', W/2, 292, {align:'center'});
+
   doc.save(`${q.number}-${q.client.replace(/\s+/g,'-')}.pdf`);
   toast('PDF downloaded');
 }
@@ -1565,7 +1723,6 @@ async function showApp(){
   document.getElementById('login-screen').style.display='none';
   document.getElementById('main-app').style.display='block';
   applyUserRole();
-  // Pull cloud data first — this sets the quotes variable — then init renders
   await syncFromCloud();
   init();
 }
@@ -1828,9 +1985,19 @@ async function deleteRecordingIDB(id){
 async function renderRecordingsForQuote(quoteId){
   const el=document.getElementById('recs-'+quoteId);
   if(!el)return;
-  const recs=await getRecordingsIDB(quoteId);
+  // Merge IDB recordings with cloud recordings from quote object
+  let idbRecs = [];
+  try{ idbRecs = await getRecordingsIDB(quoteId); }catch(e){}
+  const q = quotes.find(x=>x.id===quoteId);
+  const cloudRecs = (q&&q.recordings||[]).filter(r=>r.audio).map(r=>({
+    id:r.id, quoteId, blob:null, blobUrl:r.audio, date:r.date, transcript:r.transcript||'', fromCloud:true
+  }));
+  // Merge: prefer IDB (local) over cloud, dedupe by date
+  const idbDates = new Set(idbRecs.map(r=>r.date));
+  const merged = [...idbRecs, ...cloudRecs.filter(r=>!idbDates.has(r.date))];
+  const recs = merged;
   el.innerHTML=recs.map(r=>{
-    const url=URL.createObjectURL(r.blob);
+    const url=r.fromCloud ? r.blobUrl : URL.createObjectURL(r.blob);
     const hasT = r.transcript && r.transcript.trim();
     // escape for inline onclick attribute
     const safeT = hasT ? r.transcript.replace(/\\/g,'\\\\').replace(/'/g,"\\'").replace(/\n/g,'\\n') : '';
