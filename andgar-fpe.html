@@ -540,18 +540,18 @@ const CLOUDINARY_PRESET = 'ANDGAR';
 async function uploadAudioToCloud(blob){
   try{
     const fd = new FormData();
-    // Use mp3 extension for widest browser compatibility
     const ext = blob.type.includes('mp4') ? 'mp4' : 'webm';
     fd.append('file', blob, `recording.${ext}`);
     fd.append('upload_preset', CLOUDINARY_PRESET);
     fd.append('resource_type', 'video');
-    fd.append('format', 'mp3'); // convert to mp3 for universal playback
+    fd.append('format', 'mp3');
+    console.log('Uploading to Cloudinary:', CLOUDINARY_CLOUD, CLOUDINARY_PRESET, blob.type, blob.size);
     const r = await fetch(`https://api.cloudinary.com/v1_1/${CLOUDINARY_CLOUD}/video/upload`, {
       method:'POST', body:fd
     });
-    if(!r.ok){ console.warn('Cloudinary error:', await r.text()); return null; }
     const j = await r.json();
-    // Return mp3 URL for universal browser/phone compatibility
+    console.log('Cloudinary response:', r.status, JSON.stringify(j).substring(0,200));
+    if(!r.ok) return null;
     const url = j.secure_url.replace(/\.[^.]+$/, '.mp3');
     return url;
   }catch(e){ console.warn('Cloudinary upload failed:',e); return null; }
@@ -2079,10 +2079,11 @@ async function renderRecordingsForQuote(quoteId){
 
   recs.sort((a,b)=>new Date(a.date)-new Date(b.date));
   el.innerHTML=recs.map(r=>{
-    // Get best available URL: cloud > tempUrl > IDB blob
-    const url = (r.cloudUrl && r.cloudUrl!=='') ? r.cloudUrl 
-              : r.tempUrl && r.tempUrl!=='idb' && r.tempUrl!=='' ? r.tempUrl
-              : r.blobUrl ? r.blobUrl
+    // Get best available URL: cloud > tempUrl (if valid http) > IDB blob
+    const isValidUrl = u => u && u.startsWith('http');
+    const url = isValidUrl(r.cloudUrl) ? r.cloudUrl
+              : isValidUrl(r.tempUrl) ? r.tempUrl
+              : isValidUrl(r.blobUrl) ? r.blobUrl
               : r.blob ? URL.createObjectURL(r.blob) : '';
     const hasT = r.transcript && r.transcript.trim();
     // escape for inline onclick attribute
@@ -2094,7 +2095,7 @@ async function renderRecordingsForQuote(quoteId){
           <source src="${url}" type="audio/mpeg">
           <source src="${url}" type="audio/webm">
           <source src="${url}" type="audio/mp4">
-        </audio>` : `<div style="font-size:11px;color:var(--text3);padding:4px 0">⏫ Uploading…</div>`}
+        </audio>` : `<div style="font-size:11px;color:var(--amber-txt);padding:6px 0">⏫ Uploading to cloud…</div>`}
           <div class="rec-date">${r.date}</div>
         </div>
         ${hasT?`<span onclick="showRecTranscript(this,'${safeT}')" style="cursor:pointer;font-size:16px;flex-shrink:0;opacity:.75" title="View transcript">📝</span>`:''}
