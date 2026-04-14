@@ -634,8 +634,29 @@ async function syncFromCloud(){
   updateSyncBadge('⟳ Syncing…');
   const data = await cloudGet();
   if(!data){ updateSyncBadge('No cloud data yet'); return; }
-  // Always trust cloud as source of truth (includes deletions)
-  quotes = data.quotes || quotes;
+
+  const cloudQuotes = data.quotes || [];
+  const localQuotes = quotes;
+
+  // Merge: use cloud as truth for everything EXCEPT recMeta
+  // recMeta (recordings) are always merged from both sides so nothing is lost
+  quotes = cloudQuotes.map(cq => {
+    const lq = localQuotes.find(x=>x.id===cq.id);
+    if(!lq) return cq;
+    // Merge recMeta from both local and cloud — keep all unique entries by date
+    const seen = new Set();
+    const merged = [...(cq.recMeta||[]), ...(lq.recMeta||[])].filter(m=>{
+      if(seen.has(m.date)) return false;
+      seen.add(m.date); return true;
+    });
+    return {...cq, recMeta: merged};
+  });
+
+  // Also keep any local quotes not in cloud (edge case)
+  localQuotes.forEach(lq=>{
+    if(!quotes.find(x=>x.id===lq.id)) quotes.push(lq);
+  });
+
   if(data.settings) settings = {...settings, ...data.settings};
   if(data.ints) ints = data.ints;
   if(data.passes){
@@ -645,6 +666,10 @@ async function syncFromCloud(){
   localStorage.setItem('af_q', JSON.stringify(quotes));
   localStorage.setItem('af_s', JSON.stringify(settings));
   localStorage.setItem('af_i', JSON.stringify(ints));
+
+  // Push merged recMeta back to cloud so both devices stay in sync
+  cloudSet(getSyncData());
+
   updateSyncBadge('✓ Synced');
   renderList(); renderCalendar(); updateIntChips();
 }
