@@ -543,15 +543,15 @@ async function uploadAudioToCloud(blob){
     const ext = blob.type.includes('mp4') ? 'mp4' : 'webm';
     fd.append('file', blob, `recording.${ext}`);
     fd.append('upload_preset', CLOUDINARY_PRESET);
-    // Do NOT send resource_type in URL — let preset handle it
-    console.log('Uploading to Cloudinary:', CLOUDINARY_CLOUD, CLOUDINARY_PRESET, blob.type, blob.size);
-    const r = await fetch(`https://api.cloudinary.com/v1_1/${CLOUDINARY_CLOUD}/auto/upload`, {
+    const r = await fetch(`https://api.cloudinary.com/v1_1/${CLOUDINARY_CLOUD}/video/upload`, {
       method:'POST', body:fd
     });
     const j = await r.json();
-    console.log('Cloudinary response:', r.status, JSON.stringify(j).substring(0,300));
-    if(!r.ok) return null;
-    return j.secure_url;
+    if(!r.ok){ console.warn('Cloudinary error:', j); return null; }
+    // Use Cloudinary's format transformation to serve mp4 — works on ALL browsers including Safari
+    // Replace the extension in the URL with .mp4
+    const mp4Url = j.secure_url.replace(/\.webm$|\.mp4$|\.m4a$|\.ogg$/, '.mp4');
+    return mp4Url;
   }catch(e){ console.warn('Cloudinary upload failed:',e); return null; }
 }
 
@@ -618,7 +618,9 @@ async function cloudSet(data){
 
 function getSyncData(){
   const deletedRecs = JSON.parse(localStorage.getItem('af_deleted_recs')||'[]');
-  return { quotes, settings, ints, passes:JSON.parse(localStorage.getItem('af_passes')||'{}'), deletedRecs };
+  const ts = Date.now(); // timestamp so we know which version is newest
+  localStorage.setItem('af_last_save', String(ts));
+  return { quotes, settings, ints, passes:JSON.parse(localStorage.getItem('af_passes')||'{}'), deletedRecs, ts };
 }
 
 function markRecDeleted(id){
@@ -645,6 +647,17 @@ async function syncFromCloud(){
   updateSyncBadge('⟳ Syncing…');
   const data = await cloudGet();
   if(!data){ updateSyncBadge('No cloud data yet'); return; }
+
+  const cloudTs = data.ts || 0;
+  const localTs = parseInt(localStorage.getItem('af_last_save')||'0');
+
+  // If local is newer than cloud, push local to cloud instead of pulling
+  if(localTs > cloudTs && localTs > 0){
+    updateSyncBadge('⟳ Pushing local changes…');
+    await cloudSet(getSyncData());
+    updateSyncBadge('✓ Synced');
+    return;
+  }
 
   const cloudQuotes = data.quotes || [];
   const localQuotes = quotes;
@@ -742,7 +755,7 @@ function load(){
     const i=localStorage.getItem('af_i'); if(i) ints=JSON.parse(i);
   }catch(e){}
 }
-function save(){ try{ localStorage.setItem('af_q',JSON.stringify(quotes)); }catch(e){} scheduleSyncPush(); }
+function save(){ try{ localStorage.setItem('af_q',JSON.stringify(quotes)); localStorage.setItem('af_last_save',String(Date.now())); }catch(e){} scheduleSyncPush(); }
 function saveS(){ try{ localStorage.setItem('af_s',JSON.stringify(settings)); }catch(e){} scheduleSyncPush(); }
 function saveI(){ try{ localStorage.setItem('af_i',JSON.stringify(ints)); }catch(e){} scheduleSyncPush(); }
 
@@ -2120,9 +2133,11 @@ async function renderRecordingsForQuote(quoteId){
   el.innerHTML=recs.map(r=>{
     // Get best available URL: cloud > tempUrl (if valid http) > IDB blob
     const isValidUrl = u => u && u.startsWith('http');
-    const url = isValidUrl(r.cloudUrl) ? r.cloudUrl
+    // Convert any cloudinary webm URL to mp4 for Safari/iPhone compatibility
+    const toMp4 = u => (u && u.includes('cloudinary.com')) ? u.replace(/\.webm$|\.ogg$|\.m4a$/, '.mp4') : u;
+    const url = isValidUrl(r.cloudUrl) ? toMp4(r.cloudUrl)
               : isValidUrl(r.tempUrl) ? r.tempUrl
-              : isValidUrl(r.blobUrl) ? r.blobUrl
+              : isValidUrl(r.blobUrl) ? toMp4(r.blobUrl)
               : r.blob ? URL.createObjectURL(r.blob) : '';
     const hasT = r.transcript && r.transcript.trim();
     // escape for inline onclick attribute
