@@ -664,7 +664,7 @@ function init(){
     Object.assign(USERS, passes);
   }catch(e){}
 
-  // If quotes is empty (cloud sync found nothing or offline), fall back to localStorage
+  // If quotes is empty after cloud sync, try localStorage
   if(!quotes.length){
     try{
       const q=localStorage.getItem('af_q'); if(q) quotes=JSON.parse(q);
@@ -673,20 +673,8 @@ function init(){
     }catch(e){}
   }
 
-  // If still empty, load demo quotes
-  if(!quotes.length){
-    const y=TY,m=String(TM+1).padStart(2,'0');
-    const lm=TM===0?'12':String(TM).padStart(2,'0');
-    const ly=TM===0?y-1:y;
-    quotes=[
-      {id:'q1',number:'Q-2025-001',client:'Hartwell Construction',amount:18400,desc:'Commercial renovation – Phase 1',keyword:'RENO',designUrl:'',emails:['build@hartwell.com'],phones:['+1 (604) 555-0182'],status:'sent',priority:'red',created:`${ly}-${lm}-12`,startDate:`${ly}-${lm}-14`,endDate:`${y}-${m}-30`,notes:'Awaiting sign-off from PM.',recordings:[]},
-      {id:'q2',number:'Q-2025-002',client:'Nexora Digital',amount:6750,desc:'Web platform redesign',keyword:'WEB',designUrl:'',emails:['ops@nexora.io'],phones:['+1 (778) 555-0034'],status:'design',priority:'orange',created:`${y}-${m}-03`,startDate:'',endDate:'',notes:'',recordings:[]},
-      {id:'q3',number:'Q-2025-003',client:'Bramblewick Interiors',amount:3200,desc:'Supply and install – kitchen fittings',keyword:'INSTALL',designUrl:'',emails:['hello@bramblewick.ca'],phones:['+1 (604) 555-0291'],status:'accepted',priority:'yellow',created:`${ly}-${lm}-22`,startDate:`${ly}-${lm}-28`,endDate:`${y}-${m}-15`,notes:'Deposit received.',recordings:[]},
-      {id:'q4',number:'Q-2025-004',client:'Oaken Property Group',amount:52000,desc:'Multi-unit commercial fitout',keyword:'FITOUT',designUrl:'',emails:['projects@oaken.ca'],phones:['+1 (604) 555-0410'],status:'operations',priority:'red',created:`${y}-${m}-18`,startDate:'',endDate:'',notes:'Director approval needed.',recordings:[]},
-      {id:'q5',number:'Q-2025-005',client:'Sable Ridge Landscaping',amount:9100,desc:'Grounds maintenance contract',keyword:'MAINT',designUrl:'',emails:['info@sableridge.ca'],phones:['+1 (778) 555-0199'],status:'sent',priority:'orange',created:`${y}-${m}-25`,startDate:'',endDate:'',notes:'',recordings:[]},
-    ];
-    save();
-  }
+  // Never show demo quotes — if still empty just start blank
+  // (demo quotes caused confusion when signing in on new devices)
 
   // Migrate old data format
   quotes.forEach(q=>{
