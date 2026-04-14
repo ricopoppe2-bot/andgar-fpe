@@ -535,7 +535,7 @@ const STAGES={open:{label:'Open',cls:'s-open',dot:'#185FA5'},quoted:{label:'Quot
 // ── Cloud sync (JSONBin) ─────────────────────────────────────────────────
 const JBIN_KEY = '$2a$10$5aVUj15z/c5RJHbffNbFBO3pm4LCv/S7VGpMg9Uve5SLR2JQtc5gm';
 const JBIN_BASE = 'https://api.jsonbin.io/v3';
-let binId = localStorage.getItem('af_bin_id') || null;
+let binId = localStorage.getItem('af_bin_id') || '69de896f36566621a8b2b27a';
 let syncTimer = null;
 
 async function ensureBin(){
