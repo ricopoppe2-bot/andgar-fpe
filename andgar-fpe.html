@@ -1272,8 +1272,11 @@ async function startRecording(id){
   try{
     // Get a fresh stream (reuses permission already granted on login)
     const stream=await navigator.mediaDevices.getUserMedia({audio:true});
-    const mimeType=MediaRecorder.isTypeSupported('audio/webm')?'audio/webm':'audio/mp4';
-    const mr=new MediaRecorder(stream,{mimeType});
+    // iOS Safari requires no mimeType specified + no timeslice
+    const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
+    const mimeType = isIOS ? '' : (MediaRecorder.isTypeSupported('audio/webm') ? 'audio/webm' : 'audio/mp4');
+    const mrOpts = mimeType ? {mimeType} : {};
+    const mr = new MediaRecorder(stream, mrOpts);
     const chunks=[];
     mr.ondataavailable=e=>{if(e.data&&e.data.size>0)chunks.push(e.data);};
     mr.onstop=async ()=>{
@@ -1284,21 +1287,14 @@ async function startRecording(id){
 
       await saveRecordingIDB(id, blobUrl, date, transcript||'');
 
-      await new Promise(resolve=>{
-        const reader=new FileReader();
-        reader.onload=()=>{
-          const q=quotes.find(x=>x.id===id);
-          if(q){
-            if(!q.recordings)q.recordings=[];
-            q.recordings.push({id:'r'+Date.now(),date,transcript:transcript||'',audio:reader.result});
-            if(q.recordings.length>5)q.recordings=q.recordings.slice(-5);
-            save();
-          }
-          resolve();
-        };
-        reader.onerror=resolve;
-        reader.readAsDataURL(blob);
-      });
+      // Save transcript reference to quote (no audio blob — stays in IDB only)
+      const q=quotes.find(x=>x.id===id);
+      if(q){
+        if(!q.recMeta)q.recMeta=[];
+        q.recMeta.push({id:'r'+Date.now(),date,transcript:transcript||''});
+        if(q.recMeta.length>20)q.recMeta=q.recMeta.slice(-20);
+        save();
+      }
 
       URL.revokeObjectURL(blobUrl);
       stream.getTracks().forEach(t=>t.stop());
@@ -1312,7 +1308,7 @@ async function startRecording(id){
       await renderRecordingsForQuote(id);
       toast('Recording saved');
     };
-    mr.start(500);
+    mr.start(); // no timeslice — required for iOS Safari compatibility
     activeRecorders[id]={mr,startTime:Date.now()};
     startTranscript(id);
     const timerEl=document.getElementById('rec-timer-'+id);
@@ -1937,7 +1933,7 @@ function toggleRecTranscript(btn){
 let idb=null;
 function openIDB(){
   return new Promise((res,rej)=>{
-    const req=indexedDB.open('andgar_fpe',2);
+    const req=indexedDB.open('andgar_fpe',3);
     req.onupgradeneeded=e=>{
       const db=e.target.result;
       if(!db.objectStoreNames.contains('recordings')){
@@ -1985,17 +1981,18 @@ async function deleteRecordingIDB(id){
 async function renderRecordingsForQuote(quoteId){
   const el=document.getElementById('recs-'+quoteId);
   if(!el)return;
-  // Merge IDB recordings with cloud recordings from quote object
-  let idbRecs = [];
-  try{ idbRecs = await getRecordingsIDB(quoteId); }catch(e){}
+  let recs = [];
+  try{ recs = await getRecordingsIDB(quoteId); }catch(e){}
+  // Enrich with transcript from recMeta if IDB record missing transcript
   const q = quotes.find(x=>x.id===quoteId);
-  const cloudRecs = (q&&q.recordings||[]).filter(r=>r.audio).map(r=>({
-    id:r.id, quoteId, blob:null, blobUrl:r.audio, date:r.date, transcript:r.transcript||'', fromCloud:true
-  }));
-  // Merge: prefer IDB (local) over cloud, dedupe by date
-  const idbDates = new Set(idbRecs.map(r=>r.date));
-  const merged = [...idbRecs, ...cloudRecs.filter(r=>!idbDates.has(r.date))];
-  const recs = merged;
+  const meta = (q&&q.recMeta)||[];
+  recs = recs.map(r=>{
+    if(!r.transcript){
+      const m = meta.find(m=>m.date===r.date);
+      if(m) r.transcript = m.transcript||'';
+    }
+    return r;
+  });
   el.innerHTML=recs.map(r=>{
     const url=r.fromCloud ? r.blobUrl : URL.createObjectURL(r.blob);
     const hasT = r.transcript && r.transcript.trim();
