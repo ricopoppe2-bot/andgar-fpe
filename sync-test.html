@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Sync Test</title>
+<style>
+  body { font-family: sans-serif; padding: 30px; max-width: 600px; background: #111; color: #eee; }
+  button { padding: 14px 24px; font-size: 16px; background: #1B6CA8; color: white; border: none; border-radius: 8px; cursor: pointer; margin: 8px 0; width: 100%; }
+  button:hover { background: #155a8a; }
+  #log { margin-top: 20px; background: #1a1a1a; border: 1px solid #333; border-radius: 8px; padding: 16px; font-family: monospace; font-size: 13px; min-height: 100px; white-space: pre-wrap; word-break: break-all; }
+  .ok  { color: #2ECC71; }
+  .err { color: #e24b4a; }
+  .inf { color: #aaa; }
+  h2 { color: #2ECC71; }
+</style>
+</head>
+<body>
+<h2>🔧 ANDGAR Sync Test</h2>
+<p style="color:#aaa;font-size:13px">Run this from the Netlify URL (not a local file) to test if cloud sync works.</p>
+
+<button onclick="runTest()">▶ Run Sync Test</button>
+<button onclick="showBinId()">🔍 Show my Bin ID</button>
+<button onclick="clearBin()">🗑 Clear Bin ID (reset)</button>
+
+<div id="log"><span class="inf">Press "Run Sync Test" to start…</span></div>
+
+<script>
+const JBIN_KEY = '$2a$10$5aVUj15z/c5RJHbffNbFBO3pm4LCv/S7VGpMg9Uve5SLR2JQtc5gm';
+const JBIN_BASE = 'https://api.jsonbin.io/v3';
+const log = document.getElementById('log');
+
+function write(msg, cls='inf'){
+  log.innerHTML += `\n<span class="${cls}">${msg}</span>`;
+  log.scrollTop = log.scrollHeight;
+}
+
+function showBinId(){
+  log.innerHTML = '';
+  const id = localStorage.getItem('af_bin_id');
+  if(id){
+    write('✅ Bin ID found: ' + id, 'ok');
+    write('\nCopy this ID and give it to Claude to hardcode into the app.', 'inf');
+  } else {
+    write('❌ No bin ID in localStorage yet.', 'err');
+    write('Run the sync test first to create one.', 'inf');
+  }
+}
+
+function clearBin(){
+  localStorage.removeItem('af_bin_id');
+  log.innerHTML = '';
+  write('🗑 Bin ID cleared. Run test again to create a fresh one.', 'inf');
+}
+
+async function runTest(){
+  log.innerHTML = '';
+  write('=== ANDGAR Sync Test ===\n', 'inf');
+  write('URL: ' + window.location.href, 'inf');
+  write('Protocol: ' + window.location.protocol, window.location.protocol === 'https:' ? 'ok' : 'err');
+
+  if(window.location.protocol !== 'https:'){
+    write('\n⚠️  You must open this from the Netlify https:// link, not a local file!', 'err');
+    write('Go to app.netlify.com/drop, upload the html file, then open the https link.', 'inf');
+    return;
+  }
+
+  write('\n--- Step 1: Testing network reach to jsonbin.io ---', 'inf');
+  try {
+    const r = await fetch('https://api.jsonbin.io/v3/b', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-Master-Key': JBIN_KEY,
+        'X-Bin-Name': 'andgar-test-' + Date.now(),
+        'X-Private': 'true'
+      },
+      body: JSON.stringify({ test: true, ts: Date.now() })
+    });
+    const status = r.status;
+    write('HTTP status: ' + status, r.ok ? 'ok' : 'err');
+
+    if(r.ok){
+      const j = await r.json();
+      const newId = j.metadata?.id;
+      write('✅ Bin created! ID: ' + newId, 'ok');
+
+      // Check if we already have one
+      const existing = localStorage.getItem('af_bin_id');
+      if(!existing){
+        localStorage.setItem('af_bin_id', newId);
+        write('✅ Saved as af_bin_id in localStorage', 'ok');
+        write('\n🎉 YOUR BIN ID: ' + newId, 'ok');
+        write('\nCopy this and give it to Claude!', 'ok');
+      } else {
+        write('ℹ️  You already have bin ID: ' + existing, 'inf');
+        write('The new test bin ID is: ' + newId + ' (not saved)', 'inf');
+        write('\n🎉 USE THIS EXISTING ID: ' + existing, 'ok');
+        write('\nCopy this and give it to Claude!', 'ok');
+      }
+    } else {
+      const txt = await r.text();
+      write('❌ Error response: ' + txt, 'err');
+      write('\nTry opening the app from the Netlify link then logging in.', 'inf');
+    }
+  } catch(e) {
+    write('❌ Network error: ' + e.message, 'err');
+    write('\nThis usually means:', 'inf');
+    write('  • You opened this as a local file (not from Netlify)', 'inf');
+    write('  • Or your network is blocking the request', 'inf');
+  }
+}
+</script>
+</body>
+</html>

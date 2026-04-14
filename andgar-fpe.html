@@ -1,0 +1,1893 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0,viewport-fit=cover"/>
+<meta name="theme-color" content="#2B3A52"/>
+<meta name="apple-mobile-web-app-capable" content="yes"/>
+<meta name="apple-mobile-web-app-status-bar-style" content="black"/>
+<meta name="apple-mobile-web-app-title" content="ANDGAR FPE"/>
+<title>ANDGAR FPE</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Sora:wght@400;500;600&family=Oswald:wght@600;700&display=swap" rel="stylesheet"/>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<style>
+:root{
+  --bg:#f5f4f0;--surface:#fff;--surface2:#f0efe9;--surface3:#e8e6de;
+  --border:rgba(0,0,0,.09);--border2:rgba(0,0,0,.16);
+  --text:#1a1a18;--text2:#5a5a56;--text3:#9a9994;
+  --blue-bg:#E6F1FB;--blue-txt:#185FA5;
+  --green-bg:#EAF3DE;--green-txt:#3B6D11;
+  --amber-bg:#FAEEDA;--amber-txt:#854F0B;
+  --red-bg:#FCEBEB;--red-txt:#A32D2D;
+  --purple-bg:#EEEDFE;--purple-txt:#3C3489;
+  --teal-bg:#E1F5EE;--teal-txt:#0F6E56;
+  --r:10px;--rl:14px;
+}
+@media(prefers-color-scheme:dark){:root{
+  --bg:#1a1a18;--surface:#252523;--surface2:#2e2e2b;--surface3:#38382f;
+  --border:rgba(255,255,255,.09);--border2:rgba(255,255,255,.18);
+  --text:#f0efe9;--text2:#a8a89e;--text3:#666660;
+  --blue-bg:#0c3057;--blue-txt:#7ab8ef;
+  --green-bg:#1a3309;--green-txt:#8fcc50;
+  --amber-bg:#3a2200;--amber-txt:#f5b840;
+  --red-bg:#3a1010;--red-txt:#f07070;
+  --purple-bg:#2a2860;--purple-txt:#b0aaff;
+  --teal-bg:#0a2e22;--teal-txt:#4dd4a0;
+}}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Sora',sans-serif;background:var(--bg);color:var(--text);min-height:100vh}
+.app{max-width:940px;margin:0 auto;padding:1.5rem 1rem 5rem}
+
+/* Header */
+.header{display:flex;align-items:center;justify-content:space-between;margin-bottom:1.75rem;flex-wrap:wrap;gap:10px}
+.logo{display:flex;align-items:center;gap:13px}
+.logo-mark{width:52px;height:52px;background:transparent;border-radius:12px;display:flex;align-items:center;justify-content:center;flex-shrink:0;overflow:hidden}
+.logo-mark svg{width:52px;height:52px}
+.logo-text{font-family:'Oswald',sans-serif;font-size:26px;font-weight:700;color:var(--text);letter-spacing:1.5px;line-height:1;text-transform:uppercase;font-style:italic}
+.logo-sub{font-size:9px;color:var(--text3);font-family:'DM Mono',monospace;letter-spacing:1.2px;margin-top:3px}
+.header-btns{display:flex;gap:8px;flex-wrap:wrap}
+
+/* Buttons */
+.btn{font-family:'Sora',sans-serif;font-size:13px;font-weight:500;padding:8px 14px;border-radius:8px;border:1px solid var(--border2);background:var(--surface);color:var(--text);cursor:pointer;transition:background .15s;white-space:nowrap}
+.btn:hover{background:var(--surface2)}
+.btn-primary{background:var(--text);color:var(--surface);border-color:transparent}
+.btn-primary:hover{opacity:.85}
+.btn-sm{font-size:12px;padding:5px 10px}
+.icon-btn{display:flex;align-items:center;gap:6px;font-family:'Sora',sans-serif;font-size:13px;font-weight:500;padding:8px 14px;border-radius:8px;border:1px solid var(--border2);background:var(--surface);color:var(--text);cursor:pointer;transition:background .15s}
+.icon-btn:hover{background:var(--surface2)}
+
+/* Integrations */
+.int-bar{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:1.5rem}
+.int-chip{display:flex;align-items:center;gap:6px;font-size:11px;font-weight:500;padding:5px 11px;border-radius:20px;border:1px solid var(--border2);background:var(--surface);color:var(--text2);cursor:pointer;font-family:'DM Mono',monospace;transition:all .15s}
+.int-chip:hover{background:var(--surface2)}
+.int-chip.on{background:var(--green-bg);color:var(--green-txt);border-color:transparent}
+.int-dot{width:6px;height:6px;border-radius:50%;background:currentColor;flex-shrink:0}
+
+/* Stats */
+.stats-row{display:grid;grid-template-columns:2fr 1fr 1fr 1fr 1fr;gap:10px;margin-bottom:1.75rem;align-items:stretch}
+.stat-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:14px 16px;display:flex;flex-direction:column;justify-content:center}
+.stat-label{font-size:10px;color:var(--text3);font-family:'DM Mono',monospace;text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px}
+.stat-value{font-size:22px;font-weight:600;color:var(--text)}
+.stat-dot{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:5px;vertical-align:middle}
+.stat-hero{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:16px 18px;display:flex;flex-direction:column;gap:7px}
+.hero-label{font-size:10px;color:var(--text3);font-family:'DM Mono',monospace;text-transform:uppercase;letter-spacing:.5px}
+.hero-count{font-size:36px;font-weight:600;line-height:1}
+.hero-clients{display:flex;flex-direction:column;gap:5px;margin-top:4px}
+.hero-row{display:flex;align-items:center;gap:8px}
+.hero-av{width:22px;height:22px;border-radius:50%;background:var(--blue-bg);color:var(--blue-txt);display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:500;flex-shrink:0;font-family:'DM Mono',monospace}
+.hero-name{font-size:12px;flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0}
+.hero-num{font-size:10px;color:var(--text3);font-family:'DM Mono',monospace;flex-shrink:0}
+
+/* Toolbar */
+.toolbar{display:flex;align-items:center;gap:8px;margin-bottom:1.25rem;flex-wrap:wrap}
+.search-wrap{flex:1;min-width:200px;position:relative}
+.search-wrap input{width:100%;padding:9px 12px 9px 34px;font-family:'Sora',sans-serif;font-size:13px;border-radius:8px;border:1px solid var(--border2);background:var(--surface);color:var(--text)}
+.search-wrap input:focus{outline:none;border-color:var(--text3)}
+.search-ico{position:absolute;left:11px;top:50%;transform:translateY(-50%);color:var(--text3);font-size:15px;pointer-events:none}
+.filter-btn{font-family:'Sora',sans-serif;font-size:12px;font-weight:500;padding:7px 13px;border-radius:20px;border:1px solid var(--border2);background:var(--surface);color:var(--text2);cursor:pointer;transition:all .15s}
+.filter-btn.active{background:var(--text);color:var(--surface);border-color:transparent}
+.filter-btn:hover:not(.active){background:var(--surface2)}
+
+/* Quote cards */
+.quote-list{display:flex;flex-direction:column;gap:8px}
+.quote-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--rl);overflow:visible;transition:border-color .15s;position:relative}
+.quote-card:hover{border-color:var(--border2)}
+.qheader{display:flex;align-items:center;gap:12px;padding:15px 16px;cursor:pointer;user-select:none}
+
+/* Priority dots — bigger */
+.prio-stack{display:flex;flex-direction:column;gap:5px;flex-shrink:0}
+.pdot{width:16px;height:16px;border-radius:50%;cursor:pointer;transition:filter .15s,opacity .15s}
+.pdot:hover{filter:brightness(1.15)}
+.pdot.r{background:#E24B4A}.pdot.o{background:#EF9F27}.pdot.y{background:#FAC775}
+.pdot.off{opacity:.2;filter:saturate(0.3)}
+.pdot.on{opacity:1;filter:brightness(1.1) saturate(1.4)}
+
+.pbar{width:4px;height:42px;border-radius:2px;flex-shrink:0;transition:background .2s}
+.qinfo{flex:1;min-width:0}
+.qnum{font-family:'DM Mono',monospace;font-size:13px;font-weight:500;color:var(--text2);margin-bottom:3px}
+.qclient{font-size:15px;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.qkeyword{font-size:12px;color:var(--purple-txt);font-family:'DM Mono',monospace;margin-top:2px;font-weight:500}
+.qmeta{display:flex;align-items:center;gap:8px;flex-shrink:0}
+.qamt{font-family:'DM Mono',monospace;font-size:13px;font-weight:500}
+.chev{font-size:13px;color:var(--text3);transition:transform .2s;margin-left:2px}
+.chev.open{transform:rotate(180deg)}
+
+/* Stage pill — clickable dropdown */
+.stage-wrap{position:relative}
+.stage-pill{font-size:11px;padding:4px 10px;border-radius:20px;font-weight:500;cursor:pointer;user-select:none;border:1px solid transparent;transition:opacity .15s;display:inline-flex;align-items:center;gap:4px}
+.stage-pill:hover{opacity:.8}
+.stage-pill::after{content:'▾';font-size:9px;opacity:.7}
+.s-open{background:var(--blue-bg);color:var(--blue-txt)}
+.s-sent{background:var(--amber-bg);color:var(--amber-txt)}
+.s-accepted{background:var(--green-bg);color:var(--green-txt)}
+.s-declined{background:var(--red-bg);color:var(--red-txt)}
+.s-design{background:var(--purple-bg);color:var(--purple-txt)}
+.s-operations{background:var(--teal-bg);color:var(--teal-txt)}
+.s-install{background:#fff3e0;color:#e65100}
+.s-call{background:#fce4ec;color:#880e4f}
+
+.stage-dropdown{position:absolute;right:0;top:calc(100% + 4px);background:var(--surface);border:1px solid var(--border2);border-radius:10px;box-shadow:0 8px 24px rgba(0,0,0,.13);z-index:300;min-width:150px;overflow:hidden}
+.stage-opt{padding:9px 14px;font-size:13px;cursor:pointer;display:flex;align-items:center;gap:8px;transition:background .1s}
+.stage-opt:hover{background:var(--surface2)}
+.stage-opt .dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+
+/* Body */
+.qbody{border-top:1px solid var(--border);padding:18px;display:none}
+.qbody.open{display:block}
+.body-grid{display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-bottom:18px}
+.fl{font-size:10px;font-family:'DM Mono',monospace;text-transform:uppercase;letter-spacing:.5px;color:var(--text3);margin-bottom:5px}
+.fv{font-size:14px}
+.flink{color:var(--blue-txt);text-decoration:none;font-size:13px}
+.flink:hover{text-decoration:underline}
+.contact-item{display:flex;align-items:center;gap:8px;padding:8px 12px;background:var(--surface2);border-radius:8px;margin-top:6px;font-size:13px}
+.contact-item .ci{font-size:12px;width:16px;text-align:center;flex-shrink:0}
+.contact-item a{color:var(--text);text-decoration:none}
+.contact-item a:hover{text-decoration:underline;color:var(--blue-txt)}
+.contact-item .rm{margin-left:auto;cursor:pointer;color:var(--text3);font-size:11px;padding:2px 5px;border-radius:4px}
+.contact-item .rm:hover{background:var(--red-bg);color:var(--red-txt)}
+.add-contact{display:flex;gap:6px;margin-top:6px;flex-wrap:wrap}
+.add-contact input{flex:1;min-width:140px;font-family:'Sora',sans-serif;font-size:12px;padding:6px 10px;border-radius:7px;border:1px solid var(--border2);background:var(--surface);color:var(--text)}
+.add-contact input:focus{outline:none}
+
+/* Date fields */
+.dates-row{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px}
+.date-field input{font-family:'Sora',sans-serif;font-size:13px;padding:7px 10px;border-radius:7px;border:1px solid var(--border2);background:var(--surface);color:var(--text);width:100%;margin-top:4px}
+.date-field input:focus{outline:none;border-color:var(--text3)}
+
+/* Notes & recordings */
+.notes-area{width:100%;font-family:'Sora',sans-serif;font-size:13px;color:var(--text);background:var(--surface2);border:1px solid var(--border2);border-radius:8px;padding:10px 12px;resize:vertical;min-height:70px;line-height:1.6;margin-top:5px}
+.notes-area:focus{outline:none;border-color:var(--text3)}
+.notes-area::placeholder{color:var(--text3)}
+.rec-bar{display:flex;align-items:center;gap:8px;margin-top:8px;flex-wrap:wrap}
+.rec-btn{display:flex;align-items:center;gap:7px;font-family:'Sora',sans-serif;font-size:13px;font-weight:500;padding:9px 16px;border-radius:20px;border:1px solid var(--border2);background:var(--surface);color:var(--text2);cursor:pointer;transition:all .15s}
+.rec-btn:hover{background:var(--surface2)}
+.rec-btn.recording{background:var(--red-bg);color:var(--red-txt);border-color:var(--red-txt);animation:pulse 1s infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.6}}
+.rec-dot{width:8px;height:8px;border-radius:50%;background:currentColor;flex-shrink:0}
+.recordings-list{margin-top:10px;display:flex;flex-direction:column;gap:6px}
+.rec-item{display:flex;align-items:center;gap:10px;padding:8px 12px;background:var(--surface2);border-radius:8px;border:1px solid var(--border)}
+.rec-item audio{flex:1;height:28px}
+.rec-item .rec-date{font-size:10px;color:var(--text3);font-family:'DM Mono',monospace;white-space:nowrap}
+.rec-item .rec-del{cursor:pointer;color:var(--text3);font-size:12px;padding:3px 6px;border-radius:4px}
+.rec-item .rec-del:hover{background:var(--red-bg);color:var(--red-txt)}
+
+/* Design link + keyword row */
+.design-row{display:flex;align-items:center;gap:10px;margin-bottom:14px;flex-wrap:wrap}
+.design-link{display:inline-flex;align-items:center;gap:5px;font-size:12px;font-weight:500;color:var(--blue-txt);text-decoration:none;padding:5px 11px;border-radius:7px;border:1px solid var(--blue-bg);background:var(--blue-bg);transition:opacity .15s}
+.design-link:hover{opacity:.75}
+.keyword-badge{font-size:12px;font-weight:500;padding:4px 10px;border-radius:7px;background:var(--purple-bg);color:var(--purple-txt);font-family:'DM Mono',monospace}
+
+/* Stage filter dropdown in toolbar */
+.stage-filter-wrap{position:relative}
+.stage-filter-dd{position:absolute;top:calc(100% + 5px);right:0;background:var(--surface);border:1px solid var(--border2);border-radius:10px;box-shadow:0 8px 24px rgba(0,0,0,.13);z-index:300;min-width:160px;overflow:hidden}
+.sfd-opt{padding:9px 14px;font-size:13px;cursor:pointer;display:flex;align-items:center;gap:8px;transition:background .1s;font-family:'Sora',sans-serif}
+.sfd-opt:hover{background:var(--surface2)}
+.sfd-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+
+/* Body actions */
+.body-actions{display:flex;gap:8px;margin-top:18px;flex-wrap:wrap;align-items:center}
+.abtn{font-family:'Sora',sans-serif;font-size:12px;font-weight:500;padding:7px 13px;border-radius:8px;border:1px solid var(--border2);background:var(--surface);color:var(--text2);cursor:pointer;display:flex;align-items:center;gap:6px;transition:background .12s;white-space:nowrap}
+.abtn:hover{background:var(--surface2);color:var(--text)}
+.abtn-del{color:var(--red-txt)!important;margin-left:auto}
+
+/* Calendar overlay */
+.cal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.45);display:flex;align-items:center;justify-content:center;z-index:400;padding:1rem}
+.cal-panel{background:var(--surface);border-radius:var(--rl);border:1px solid var(--border2);width:100%;max-width:580px;max-height:90vh;overflow-y:auto;box-shadow:0 16px 48px rgba(0,0,0,.22)}
+.cal-head{display:flex;align-items:center;justify-content:space-between;padding:18px 22px;border-bottom:1px solid var(--border)}
+.cal-head-title{font-size:16px;font-weight:600}
+.cal-nav{display:flex;align-items:center;gap:8px}
+.cal-nav button{background:none;border:none;font-size:18px;cursor:pointer;color:var(--text2);padding:4px 10px;border-radius:6px}
+.cal-nav button:hover{background:var(--surface2)}
+.cal-month{font-size:14px;font-weight:500;min-width:130px;text-align:center}
+.cal-grid{padding:16px 22px 16px}
+.cal-days-header{display:grid;grid-template-columns:repeat(7,1fr);text-align:center;margin-bottom:8px}
+.cal-days-header span{font-size:11px;font-family:'DM Mono',monospace;color:var(--text3);padding:4px 0}
+.cal-cells{display:grid;grid-template-columns:repeat(7,1fr);gap:3px}
+.cal-cell{min-height:52px;border-radius:8px;padding:5px 3px;cursor:pointer;transition:background .1s;position:relative}
+.cal-cell:hover{background:var(--surface2)}
+.cal-cell.other-month{opacity:.3}
+.cal-cell.today{background:var(--surface3)}
+.cal-cell.selected{outline:2px solid var(--blue-txt)}
+.cal-day-num{font-size:13px;text-align:center;color:var(--text2);margin-bottom:3px}
+.cal-event-dots{display:flex;flex-wrap:wrap;gap:2px;justify-content:center}
+.cal-edot{width:6px;height:6px;border-radius:50%;flex-shrink:0}
+.cal-events-list{padding:0 22px 20px}
+.cal-events-section-label{font-size:10px;font-family:'DM Mono',monospace;color:var(--text3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px}
+.cal-event-item{display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:9px;background:var(--surface2);margin-bottom:6px;font-size:13px}
+.cal-event-bar{width:4px;height:36px;border-radius:2px;flex-shrink:0}
+.cal-event-name{font-weight:500;font-size:13px}
+.cal-event-sub{font-size:11px;color:var(--text3);font-family:'DM Mono',monospace;margin-top:2px}
+.cal-close{background:none;border:none;font-size:20px;cursor:pointer;color:var(--text3);padding:4px 8px;border-radius:6px}
+.cal-close:hover{background:var(--surface2)}
+
+/* Modals */
+.overlay{position:fixed;inset:0;background:rgba(0,0,0,.5);display:flex;align-items:center;justify-content:center;z-index:500;padding:1rem}
+.modal{background:var(--surface);border-radius:var(--rl);border:1px solid var(--border2);padding:26px;width:100%;max-width:520px;max-height:90vh;overflow-y:auto}
+.modal-title{font-size:17px;font-weight:600;margin-bottom:20px}
+.ff{margin-bottom:14px}
+.flabel{font-size:11px;font-family:'DM Mono',monospace;color:var(--text2);margin-bottom:5px;display:block}
+.finput{width:100%;font-family:'Sora',sans-serif;font-size:13px;padding:9px 12px;border-radius:8px;border:1px solid var(--border2);background:var(--surface);color:var(--text)}
+.finput:focus{outline:none;border-color:var(--text3)}
+.modal-foot{display:flex;justify-content:flex-end;gap:8px;margin-top:22px}
+.modal-2col{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+
+/* Toast */
+#toast{position:fixed;bottom:28px;right:28px;background:var(--text);color:var(--surface);font-family:'Sora',sans-serif;font-size:13px;padding:11px 18px;border-radius:10px;z-index:999;opacity:0;transition:opacity .2s;pointer-events:none;max-width:320px}
+.empty-state{text-align:center;padding:3rem;color:var(--text3);font-size:14px}
+
+@media(max-width:620px){
+  .stats-row{grid-template-columns:1fr 1fr}
+  .stat-hero{grid-column:1/-1}
+  .body-grid,.dates-row,.modal-2col{grid-template-columns:1fr}
+  .qamt{display:none}
+}
+
+/* ── Login screen ──────────────────────────────────────────── */
+.login-screen{position:fixed;inset:0;background:#1a1a18;display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:9999;padding:2rem}
+.login-box{background:#252523;border:1px solid rgba(255,255,255,0.1);border-radius:18px;padding:40px 36px;width:100%;max-width:380px;text-align:center}
+.login-logo{display:flex;align-items:center;justify-content:center;gap:12px;margin-bottom:28px}
+.login-logo-mark{width:52px;height:52px;border-radius:12px;overflow:hidden;flex-shrink:0}
+.login-logo-mark svg{width:52px;height:52px}
+.login-title{font-family:'Oswald',sans-serif;font-size:26px;font-weight:700;color:#f0efe9;letter-spacing:1.5px;font-style:italic}
+.login-sub{font-size:9px;color:#666660;font-family:'DM Mono',monospace;letter-spacing:1.2px;margin-top:3px;text-align:left}
+.login-label{font-size:11px;font-family:'DM Mono',monospace;color:#9a9994;text-align:left;display:block;margin-bottom:6px}
+.login-input{width:100%;font-family:'Sora',sans-serif;font-size:14px;padding:12px 14px;border-radius:10px;border:1px solid rgba(255,255,255,0.12);background:rgba(255,255,255,0.06);color:#f0efe9;margin-bottom:14px}
+.login-input:focus{outline:none;border-color:rgba(255,255,255,0.3)}
+.login-input::placeholder{color:#666660}
+.login-btn{width:100%;font-family:'Sora',sans-serif;font-size:14px;font-weight:600;padding:12px;border-radius:10px;border:none;background:#f0efe9;color:#1a1a18;cursor:pointer;transition:opacity .15s;margin-top:4px}
+.login-btn:hover{opacity:.88}
+.login-err{font-size:12px;color:#f07070;margin-top:10px;min-height:18px;font-family:'DM Mono',monospace}
+.login-hint{font-size:11px;color:#666660;margin-top:16px;font-family:'DM Mono',monospace}
+
+/* ── Customer search dropdown ─────────────────────────────── */
+.cust-wrap{position:relative}
+.cust-dropdown{position:absolute;top:calc(100% + 2px);left:0;right:0;background:var(--surface);border:1px solid var(--border2);border-radius:10px;box-shadow:0 8px 28px rgba(0,0,0,.18);z-index:600;max-height:220px;overflow-y:auto}
+.cust-opt{padding:10px 14px;cursor:pointer;font-size:13px;border-bottom:1px solid var(--border);transition:background .1s}
+.cust-opt:last-child{border-bottom:none}
+.cust-opt:hover{background:var(--surface2)}
+.cust-opt-name{font-weight:500;color:var(--text)}
+.cust-opt-company{font-size:11px;color:var(--text3);font-family:'DM Mono',monospace;margin-top:2px}
+
+
+/* Contact icon buttons with dropdown */
+.contact-icon-row{display:flex;align-items:center;gap:8px;margin-top:8px}
+.contact-icon-btn{position:relative;display:inline-flex;align-items:center;justify-content:center;width:36px;height:36px;border-radius:8px;border:1px solid var(--border2);background:var(--surface);cursor:pointer;font-size:16px;color:var(--text2);transition:background .12s,color .12s;flex-shrink:0;user-select:none}
+.contact-icon-btn:hover{background:var(--surface2);color:var(--text)}
+.contact-icon-btn:active{transform:scale(.95)}
+.contact-icon-btn.has-contacts{border-color:var(--blue-bg);color:var(--blue-txt);background:var(--blue-bg)}
+.contact-icon-btn .contact-count{position:absolute;top:-5px;right:-5px;background:var(--text);color:var(--surface);font-size:9px;font-family:'DM Mono',monospace;font-weight:500;width:14px;height:14px;border-radius:50%;display:flex;align-items:center;justify-content:center;line-height:1}
+.contact-drop{position:absolute;top:calc(100% + 6px);left:0;background:var(--surface);border:1px solid var(--border2);border-radius:10px;box-shadow:0 8px 24px rgba(0,0,0,.18);z-index:500;min-width:240px;overflow:hidden}
+.contact-drop-item{display:flex;align-items:center;gap:10px;padding:9px 12px;font-size:13px;border-bottom:1px solid var(--border);cursor:pointer;transition:background .1s}
+.contact-drop-item:last-child{border-bottom:none}
+.contact-drop-item:hover{background:var(--surface2)}
+.contact-drop-item .cd-icon{font-size:13px;flex-shrink:0;color:var(--text3)}
+.contact-drop-item .cd-text{flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:var(--text)}
+.contact-drop-item .cd-action{font-size:10px;font-family:'DM Mono',monospace;color:var(--text3);flex-shrink:0;display:flex;gap:4px}
+.contact-drop-item .cd-del{padding:2px 5px;border-radius:4px;cursor:pointer}
+.contact-drop-item .cd-del:hover{background:var(--red-bg);color:var(--red-txt)}
+.contact-drop-add{display:flex;gap:6px;padding:8px 10px;border-top:1px solid var(--border);background:var(--surface2)}
+.contact-drop-add input{flex:1;font-family:'Sora',sans-serif;font-size:12px;padding:5px 8px;border-radius:6px;border:1px solid var(--border2);background:var(--surface);color:var(--text);min-width:0}
+.contact-drop-add input:focus{outline:none}
+.contact-drop-add button{font-family:'Sora',sans-serif;font-size:11px;font-weight:500;padding:5px 9px;border-radius:6px;border:1px solid var(--border2);background:var(--surface);color:var(--text2);cursor:pointer;white-space:nowrap}
+.contact-drop-add button:hover{background:var(--text);color:var(--surface)}
+</style>
+</head>
+<body>
+
+<div class="login-screen" id="login-screen">
+  <div class="login-box">
+    <div class="login-logo">
+      <div class="login-logo-mark">
+        <svg viewBox="0 0 52 52" xmlns="http://www.w3.org/2000/svg">
+          <rect width="52" height="52" rx="10" fill="#0D1B2A"/>
+          <polygon points="6,46 20,6 28,6 14,46" fill="#1B6CA8"/>
+          <polygon points="16,46 30,6 38,6 24,46" fill="#2ECC71"/>
+          <text x="8" y="48" font-family="Arial Black,sans-serif" font-size="11" font-weight="900" font-style="italic" fill="white" letter-spacing="1">FPE</text>
+        </svg>
+      </div>
+      <div>
+        <div class="login-title">ANDGAR FPE</div>
+        <div class="login-sub">QUOTE MANAGER</div>
+      </div>
+    </div>
+    <label class="login-label">Username</label>
+    <input class="login-input" id="login-user" type="text" placeholder="Enter username" autocomplete="username" onkeydown="if(event.key==='Enter')doLogin()"/>
+    <label class="login-label">Password</label>
+    <input class="login-input" id="login-pass" type="password" placeholder="Enter password" autocomplete="current-password" onkeydown="if(event.key==='Enter')doLogin()"/>
+    <button class="login-btn" onclick="doLogin()">Sign in</button>
+    <div class="login-err" id="login-err"></div>
+    <div class="login-hint">Contact your administrator to reset credentials</div>
+  </div>
+</div>
+
+<div class="app" id="main-app" style="display:none">
+
+<!-- Header -->
+<div class="header">
+  <div class="logo">
+    <div class="logo-mark">
+      <!-- ANDGAR logo recreation -->
+      <svg viewBox="0 0 52 52" xmlns="http://www.w3.org/2000/svg">
+        <rect width="52" height="52" rx="10" fill="#0D1B2A"/>
+        <polygon points="6,46 20,6 28,6 14,46" fill="#1B6CA8"/>
+        <polygon points="16,46 30,6 38,6 24,46" fill="#2ECC71"/>
+        <text x="8" y="48" font-family="Arial Black,sans-serif" font-size="11" font-weight="900" font-style="italic" fill="white" letter-spacing="1">FPE</text>
+      </svg>
+    </div>
+    <div>
+      <div style="display:flex;align-items:center;gap:8px">
+        <div class="logo-text">ANDGAR FPE</div>
+        <span id="admin-badge" style="display:none;font-size:9px;font-family:'DM Mono',monospace;background:var(--amber-bg);color:var(--amber-txt);padding:2px 7px;border-radius:20px;font-weight:500;letter-spacing:0.3px">ADMIN</span>
+      </div>
+      <div class="logo-sub">QUOTE MANAGER</div>
+    </div>
+  </div>
+  <div class="header-btns">
+    <button class="icon-btn" onclick="toggleCal()">
+      <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><rect x="1" y="2.5" width="14" height="12" rx="2"/><line x1="5" y1="1" x2="5" y2="4"/><line x1="11" y1="1" x2="11" y2="4"/><line x1="1" y1="6.5" x2="15" y2="6.5"/></svg>
+      Calendar
+    </button>
+    <button class="btn" onclick="openSettings()">⚙ Settings</button>
+    <span id="sync-badge" style="font-size:10px;font-family:'DM Mono',monospace;color:var(--text3);opacity:0;transition:opacity .3s"></span>
+    <button class="btn btn-primary" onclick="openNewModal()">+ New quote</button>
+  </div>
+</div>
+
+<!-- Integrations -->
+<div class="int-bar">
+  <div class="int-chip" id="chip-excel" onclick="toggleInt('excel')"><div class="int-dot"></div>Excel</div>
+  <div class="int-chip" id="chip-notion" onclick="toggleInt('notion')"><div class="int-dot"></div>Notion</div>
+  <div class="int-chip" id="chip-gmail" onclick="toggleInt('gmail')"><div class="int-dot"></div>Gmail</div>
+  <div class="int-chip" id="chip-sms" onclick="toggleInt('sms')"><div class="int-dot"></div>SMS</div>
+  <div class="int-chip on" id="chip-ntfy"><div class="int-dot"></div>ntfy alerts</div>
+  <div class="int-chip" id="chip-cal" onclick="toggleInt('cal')"><div class="int-dot"></div>Calendar sync</div>
+</div>
+
+<!-- Stats -->
+<div class="stats-row">
+  <div class="stat-hero">
+    <div class="hero-label">In progress</div>
+    <div class="hero-count" id="stat-open">0</div>
+    <div class="hero-clients" id="hero-clients"></div>
+    <div style="font-size:10px;color:var(--text3);font-family:'DM Mono',monospace;margin-top:4px" id="hero-month"></div>
+  </div>
+  <div class="stat-card"><div class="stat-label">Total</div><div class="stat-value" id="stat-total">0</div></div>
+  <div class="stat-card"><div class="stat-label">High priority</div><div class="stat-value"><span class="stat-dot" style="background:#E24B4A"></span><span id="stat-red">0</span></div></div>
+  <div class="stat-card"><div class="stat-label">Accepted</div><div class="stat-value" id="stat-acc">0</div></div>
+  <div class="stat-card"><div class="stat-label">New this month</div><div class="stat-value" id="stat-new">0</div></div>
+</div>
+
+<!-- Toolbar -->
+<div class="toolbar">
+  <div class="search-wrap">
+    <span class="search-ico">&#9906;</span>
+    <input type="text" id="search" placeholder="Search client or quote #..." oninput="renderList()"/>
+  </div>
+  <button class="filter-btn active" data-f="all" onclick="setFilter(this)">All</button>
+  <button class="filter-btn" data-f="red" onclick="setFilter(this)">🔴 High</button>
+  <button class="filter-btn" data-f="orange" onclick="setFilter(this)">🟠 Medium</button>
+  <button class="filter-btn" data-f="yellow" onclick="setFilter(this)">🟡 Low</button>
+  <div class="stage-filter-wrap">
+    <button class="filter-btn" id="stage-filter-btn" onclick="toggleStageFilter()">Stage ▾</button>
+    <div class="stage-filter-dd" id="stage-filter-dd" style="display:none">
+      <div class="sfd-opt" onclick="setStageFilter('')">All stages</div>
+      <div class="sfd-opt" onclick="setStageFilter('open')"><span class="sfd-dot" style="background:#185FA5"></span>Open</div>
+      <div class="sfd-opt" onclick="setStageFilter('quoted')"><span class="sfd-dot" style="background:#854F0B"></span>Quoted</div>
+      <div class="sfd-opt" onclick="setStageFilter('accepted')"><span class="sfd-dot" style="background:#3B6D11"></span>Accepted</div>
+      <div class="sfd-opt" onclick="setStageFilter('design')"><span class="sfd-dot" style="background:#3C3489"></span>Design</div>
+      <div class="sfd-opt" onclick="setStageFilter('operations')"><span class="sfd-dot" style="background:#0F6E56"></span>Operations</div>
+      <div class="sfd-opt" onclick="setStageFilter('install')"><span class="sfd-dot" style="background:#e65100"></span>Install</div>
+      <div class="sfd-opt" onclick="setStageFilter('declined')"><span class="sfd-dot" style="background:#A32D2D"></span>Declined</div>
+      <div class="sfd-opt" onclick="setStageFilter('closed')"><span class="sfd-dot" style="background:#555"></span>Closed</div>
+    </div>
+  </div>
+</div>
+
+<div class="quote-list" id="quote-list"></div>
+</div>
+
+<!-- Calendar panel -->
+<div class="cal-overlay" id="cal-overlay" style="display:none" onclick="calOverlayClick(event)">
+  <div class="cal-panel" onclick="event.stopPropagation()">
+    <div class="cal-head">
+      <div class="cal-head-title">Calendar</div>
+      <div class="cal-nav">
+        <button onclick="calNav(-1)">&#8249;</button>
+        <div class="cal-month" id="cal-month-label"></div>
+        <button onclick="calNav(1)">&#8250;</button>
+      </div>
+      <button class="cal-close" onclick="toggleCal()">✕</button>
+    </div>
+    <div class="cal-grid">
+      <div class="cal-days-header">
+        <span>Su</span><span>Mo</span><span>Tu</span><span>We</span><span>Th</span><span>Fr</span><span>Sa</span>
+      </div>
+      <div class="cal-cells" id="cal-cells"></div>
+    </div>
+    <div class="cal-events-list" id="cal-events-list"></div>
+  </div>
+</div>
+
+<!-- New/Edit modal -->
+<div class="overlay" id="modal-overlay" style="display:none" onclick="if(event.target===this)closeModal()">
+  <div class="modal" onclick="event.stopPropagation()">
+    <div class="modal-title" id="modal-title">New quote</div>
+    <div class="modal-2col">
+      <div class="ff">
+  <label class="flabel">Client name *</label>
+  <div class="cust-wrap">
+    <input class="finput" id="f-client" placeholder="Search customer…" autocomplete="off" oninput="searchCustomers(this.value)" onkeydown="custKeyNav(event)" onfocus="searchCustomers(this.value)"/>
+    <div class="cust-dropdown" id="cust-dd" style="display:none"></div>
+  </div>
+</div>
+      <div class="ff"><label class="flabel">Quote number *</label><input class="finput" id="f-number" placeholder="e.g. Q-2025-042"/></div>
+    </div>
+    <div class="modal-2col">
+      <div class="ff"><label class="flabel">Amount ($)</label><input class="finput" id="f-amount" type="number" placeholder="0.00"/></div>
+      <div class="ff"><label class="flabel">Keyword / tag</label><input class="finput" id="f-keyword" placeholder="e.g. HVAC, Sprinkler"/></div>
+    </div>
+    <div class="ff"><label class="flabel">Description / scope</label><input class="finput" id="f-desc" placeholder="Brief description of work"/></div>
+    <div class="ff"><label class="flabel">Design link URL</label><input class="finput" id="f-designurl" placeholder="https://..."/></div>
+    <div class="modal-2col">
+      <div class="ff"><label class="flabel">Start date</label><input class="finput" id="f-start" type="date"/></div>
+      <div class="ff"><label class="flabel">Completion date</label><input class="finput" id="f-end" type="date"/></div>
+    </div>
+    <div class="ff"><label class="flabel">Stage</label>
+      <select class="finput" id="f-status">
+        <option value="open">Open</option>
+        <option value="quoted">Quoted</option>
+        <option value="accepted">Accepted</option>
+        <option value="design">Design</option>
+        <option value="operations">Operations</option>
+        <option value="install">Install</option>
+        <option value="call">Call</option>
+        <option value="accepted">Accepted</option>
+        <option value="declined">Declined</option>
+      </select>
+    </div>
+    <!-- contacts are added via expanded card, not the new quote form -->
+    <div class="modal-foot">
+      <button class="btn" onclick="closeModal()">Cancel</button>
+      <button class="btn btn-primary" onclick="saveQuote()">Save quote</button>
+    </div>
+  </div>
+</div>
+
+<!-- Settings modal -->
+<div class="overlay" id="settings-overlay" style="display:none" onclick="if(event.target===this)closeSettings()">
+  <div class="modal" onclick="event.stopPropagation()">
+    <div class="modal-title" style="display:flex;align-items:center;justify-content:space-between">
+      <span>Settings</span>
+      <span id="admin-badge-settings" style="display:none;font-size:10px;font-family:'DM Mono',monospace;background:var(--amber-bg);color:var(--amber-txt);padding:3px 9px;border-radius:20px;font-weight:500">ADMIN</span>
+    </div>
+    <div id="s-user-mgmt" style="display:none">
+      <div style="font-size:11px;font-family:'DM Mono',monospace;color:var(--text3);margin-bottom:12px;padding:8px 10px;background:var(--amber-bg);color:var(--amber-txt);border-radius:7px">⚠ Admin settings — changes affect all users</div>
+    </div>
+    <div class="ff"><label class="flabel">Business name <span id="s-biz-lock" style="font-size:10px;color:var(--text3)">(admin only)</span></label><input class="finput" id="s-biz" placeholder="ANDGAR FPE"/></div>
+    <div class="modal-2col">
+      <div class="ff"><label class="flabel">Company email <span style="font-size:10px;color:var(--text3)">(admin only)</span></label><input class="finput" id="s-email" placeholder="you@company.com"/></div>
+      <div class="ff"><label class="flabel">Company phone <span style="font-size:10px;color:var(--text3)">(admin only)</span></label><input class="finput" id="s-phone" placeholder="+1 (604) 555-0000"/></div>
+    </div>
+    <div class="ff">
+      <label class="flabel">ntfy topic <span style="font-size:10px;color:var(--text3)">(admin only)</span></label>
+      <input class="finput" id="s-ntfy" placeholder="andgar-fpe-abc123"/>
+      <div style="font-size:11px;color:var(--text3);margin-top:5px">Install ntfy on your phone → Subscribe → enter this topic → get alerts.<br>🔴 today 4 pm &nbsp;·&nbsp; 🟠 tomorrow 4 pm &nbsp;·&nbsp; 🟡 end of next week Friday 4 pm</div>
+    </div>
+    <div class="ff">
+      <label class="flabel">Notion calendar email <span style="font-size:10px;color:var(--text3)">(admin only)</span></label>
+      <input class="finput" id="s-notion-email" placeholder="yourworkspace@mail.notion.so"/>
+      <div style="font-size:11px;color:var(--text3);margin-top:5px">Get this from Notion → Settings → Calendar → "Add to calendar" email address</div>
+    </div>
+    <div id="s-user-mgmt-pass" style="display:none">
+      <div class="ff" style="margin-top:4px">
+        <label class="flabel">Change andgar user password</label>
+        <div style="display:flex;gap:8px">
+          <input class="finput" id="s-new-pass" type="password" placeholder="New password for andgar"/>
+          <button class="btn btn-sm" onclick="changeUserPass()">Update</button>
+        </div>
+      </div>
+    </div>
+    <div style="font-size:12px;color:var(--text2);margin-top:8px;padding:8px 10px;background:var(--surface2);border-radius:7px">
+      Signed in as: <strong id="s-current-user"></strong>
+    </div>
+    <div class="modal-foot">
+      <button class="btn" onclick="logout()" style="color:var(--red-txt)">Log out</button>
+      <button class="btn" onclick="closeSettings()">Close</button>
+      <button class="btn" onclick="testNtfy()">Test ntfy</button>
+      <button class="btn btn-primary" id="s-save-btn" onclick="saveSettings()">Save</button>
+    </div>
+  </div>
+</div>
+
+<div id="toast"></div>
+
+<script>
+// ── State ──────────────────────────────────────────────────────────────────
+let quotes=[], settings={biz:'ANDGAR FPE',email:'',phone:'',ntfyTopic:'',notionEmail:''}, ints={}, activeFilter='all', editingId=null, expandedIds=new Set(), notesTimers={}, ntfyTimers={};
+let calYear, calMonth, calSelectedDate=null;
+let activeDropdown=null;
+const NOW=new Date(), TM=NOW.getMonth(), TY=NOW.getFullYear();
+const MONTHS=['January','February','March','April','May','June','July','August','September','October','November','December'];
+const STAGES={open:{label:'Open',cls:'s-open',dot:'#185FA5'},quoted:{label:'Quoted',cls:'s-sent',dot:'#854F0B'},accepted:{label:'Accepted',cls:'s-accepted',dot:'#3B6D11'},design:{label:'Design',cls:'s-design',dot:'#3C3489'},operations:{label:'Operations',cls:'s-operations',dot:'#0F6E56'},install:{label:'Install',cls:'s-install',dot:'#e65100'},declined:{label:'Declined',cls:'s-declined',dot:'#A32D2D'},closed:{label:'Closed',cls:'s-closed',dot:'#555'}};
+
+// ── Persist ────────────────────────────────────────────────────────────────
+// ── Cloud sync (JSONBin) ─────────────────────────────────────────────────
+const JBIN_KEY = '$2a$10$5aVUj15z/c5RJHbffNbFBO3pm4LCv/S7VGpMg9Uve5SLR2JQtc5gm';
+const JBIN_BASE = 'https://api.jsonbin.io/v3';
+let binId = localStorage.getItem('af_bin_id') || null;
+let syncTimer = null;
+
+async function ensureBin(){
+  // If we already have a bin ID, nothing to do
+  if(binId) return true;
+  try{
+    updateSyncBadge('⟳ Creating sync bin…');
+    const r = await fetch(`${JBIN_BASE}/b`, {
+      method:'POST',
+      headers:{
+        'Content-Type':'application/json',
+        'X-Access-Key':JBIN_KEY,
+        'X-Bin-Name':'andgar-fpe-quotes',
+        'X-Private':'true'
+      },
+      body: JSON.stringify({quotes:[], settings:{}, ints:{}, passes:{}})
+    });
+    if(r.ok){
+      const j = await r.json();
+      binId = j.metadata.id;
+      localStorage.setItem('af_bin_id', binId);
+      updateSyncBadge('✓ Sync ready');
+      // Show bin ID in settings if open
+      const el = document.getElementById('s-bin-id');
+      if(el) el.textContent = binId;
+      return true;
+    }
+    updateSyncBadge('Sync setup failed');
+    return false;
+  }catch(e){
+    updateSyncBadge('Offline');
+    return false;
+  }
+}
+
+async function cloudGet(){
+  if(!binId) return null;
+  try{
+    const r = await fetch(`${JBIN_BASE}/b/${binId}/latest`,{
+      headers:{'X-Access-Key':JBIN_KEY}
+    });
+    if(!r.ok) return null;
+    return (await r.json()).record;
+  }catch(e){ return null; }
+}
+
+async function cloudSet(data){
+  if(!binId){ await ensureBin(); if(!binId) return; }
+  try{
+    await fetch(`${JBIN_BASE}/b/${binId}`,{
+      method:'PUT',
+      headers:{'Content-Type':'application/json','X-Access-Key':JBIN_KEY},
+      body:JSON.stringify(data)
+    });
+  }catch(e){ console.warn('Cloud sync failed:',e); }
+}
+
+function getSyncData(){
+  return { quotes, settings, ints, passes:JSON.parse(localStorage.getItem('af_passes')||'{}') };
+}
+
+function scheduleSyncPush(){
+  clearTimeout(syncTimer);
+  syncTimer = setTimeout(()=>{ cloudSet(getSyncData()); updateSyncBadge('✓ Synced'); }, 2000);
+  updateSyncBadge('⟳ Saving…');
+}
+
+function updateSyncBadge(msg){
+  const el=document.getElementById('sync-badge');
+  if(el){ el.textContent=msg; el.style.opacity='1'; clearTimeout(el._t); el._t=setTimeout(()=>el.style.opacity='0',4000); }
+}
+
+async function syncFromCloud(){
+  // Create bin first if needed
+  if(!binId){ const ok = await ensureBin(); if(!ok) return; }
+  updateSyncBadge('⟳ Syncing…');
+  const data = await cloudGet();
+  if(!data){ updateSyncBadge('No cloud data yet'); return; }
+  if((data.quotes||[]).length || Object.keys(data.settings||{}).length){
+    quotes = data.quotes || quotes;
+    if(data.settings) settings = {...settings, ...data.settings};
+    if(data.ints) ints = data.ints;
+    if(data.passes){
+      localStorage.setItem('af_passes', JSON.stringify(data.passes));
+      Object.assign(USERS, data.passes);
+    }
+    localStorage.setItem('af_q', JSON.stringify(quotes));
+    localStorage.setItem('af_s', JSON.stringify(settings));
+    localStorage.setItem('af_i', JSON.stringify(ints));
+  }
+  updateSyncBadge('✓ Synced');
+  renderList(); renderCalendar(); updateIntChips();
+}
+
+// Re-sync every time app becomes visible — tab click, app switch, phone wake
+let lastSync = 0;
+async function syncIfNeeded(){
+  if(!currentUser) return;
+  const now = Date.now();
+  if(now - lastSync < 3000) return; // throttle: max once per 3 seconds
+  lastSync = now;
+  await syncFromCloud();
+}
+document.addEventListener('visibilitychange', ()=>{ if(document.visibilityState==='visible') syncIfNeeded(); });
+window.addEventListener('focus', syncIfNeeded);
+window.addEventListener('pageshow', syncIfNeeded); // iOS Safari tab restore
+
+// ── Local storage ─────────────────────────────────────────────────────────
+function load(){
+  try{
+    const q=localStorage.getItem('af_q'); if(q) quotes=JSON.parse(q);
+    const s=localStorage.getItem('af_s'); if(s) settings={...settings,...JSON.parse(s)};
+    const i=localStorage.getItem('af_i'); if(i) ints=JSON.parse(i);
+  }catch(e){}
+}
+function save(){ try{ localStorage.setItem('af_q',JSON.stringify(quotes)); }catch(e){} scheduleSyncPush(); }
+function saveS(){ try{ localStorage.setItem('af_s',JSON.stringify(settings)); }catch(e){} scheduleSyncPush(); }
+function saveI(){ try{ localStorage.setItem('af_i',JSON.stringify(ints)); }catch(e){} scheduleSyncPush(); }
+
+// ── Init ───────────────────────────────────────────────────────────────────
+function init(){
+  // Load passwords
+  try{
+    const passes=JSON.parse(localStorage.getItem('af_passes')||'{}');
+    Object.assign(USERS, passes);
+  }catch(e){}
+
+  // If quotes is empty (cloud sync found nothing or offline), fall back to localStorage
+  if(!quotes.length){
+    try{
+      const q=localStorage.getItem('af_q'); if(q) quotes=JSON.parse(q);
+      const s=localStorage.getItem('af_s'); if(s) settings={...settings,...JSON.parse(s)};
+      const i=localStorage.getItem('af_i'); if(i) ints=JSON.parse(i);
+    }catch(e){}
+  }
+
+  // If still empty, load demo quotes
+  if(!quotes.length){
+    const y=TY,m=String(TM+1).padStart(2,'0');
+    const lm=TM===0?'12':String(TM).padStart(2,'0');
+    const ly=TM===0?y-1:y;
+    quotes=[
+      {id:'q1',number:'Q-2025-001',client:'Hartwell Construction',amount:18400,desc:'Commercial renovation – Phase 1',keyword:'RENO',designUrl:'',emails:['build@hartwell.com'],phones:['+1 (604) 555-0182'],status:'sent',priority:'red',created:`${ly}-${lm}-12`,startDate:`${ly}-${lm}-14`,endDate:`${y}-${m}-30`,notes:'Awaiting sign-off from PM.',recordings:[]},
+      {id:'q2',number:'Q-2025-002',client:'Nexora Digital',amount:6750,desc:'Web platform redesign',keyword:'WEB',designUrl:'',emails:['ops@nexora.io'],phones:['+1 (778) 555-0034'],status:'design',priority:'orange',created:`${y}-${m}-03`,startDate:'',endDate:'',notes:'',recordings:[]},
+      {id:'q3',number:'Q-2025-003',client:'Bramblewick Interiors',amount:3200,desc:'Supply and install – kitchen fittings',keyword:'INSTALL',designUrl:'',emails:['hello@bramblewick.ca'],phones:['+1 (604) 555-0291'],status:'accepted',priority:'yellow',created:`${ly}-${lm}-22`,startDate:`${ly}-${lm}-28`,endDate:`${y}-${m}-15`,notes:'Deposit received.',recordings:[]},
+      {id:'q4',number:'Q-2025-004',client:'Oaken Property Group',amount:52000,desc:'Multi-unit commercial fitout',keyword:'FITOUT',designUrl:'',emails:['projects@oaken.ca'],phones:['+1 (604) 555-0410'],status:'operations',priority:'red',created:`${y}-${m}-18`,startDate:'',endDate:'',notes:'Director approval needed.',recordings:[]},
+      {id:'q5',number:'Q-2025-005',client:'Sable Ridge Landscaping',amount:9100,desc:'Grounds maintenance contract',keyword:'MAINT',designUrl:'',emails:['info@sableridge.ca'],phones:['+1 (778) 555-0199'],status:'sent',priority:'orange',created:`${y}-${m}-25`,startDate:'',endDate:'',notes:'',recordings:[]},
+    ];
+    save();
+  }
+
+  // Migrate old data format
+  quotes.forEach(q=>{
+    if(!q.recordings)q.recordings=[];
+    if(!q.contacts){
+      q.contacts=[];
+      (q.emails||[]).forEach((em,i)=>{
+        const ph=(q.phones||[])[i]||'';
+        q.contacts.push({name:'',email:em,phone:ph});
+      });
+      if(!(q.emails||[]).length&&(q.phones||[]).length){
+        (q.phones).forEach(ph=>q.contacts.push({name:'',email:'',phone:ph}));
+      }
+    }
+  });
+
+  calYear=TY; calMonth=TM;
+  updateIntChips();
+  renderList();
+  document.addEventListener('click', closeDropdownsOutside);
+}
+
+// ── Integrations ───────────────────────────────────────────────────────────
+function toggleInt(k){ints[k]=!ints[k];saveI();updateIntChips();const n={excel:'Excel',notion:'Notion',gmail:'Gmail',sms:'SMS',cal:'Calendar sync'};toast(ints[k]?n[k]+' connected':n[k]+' disconnected');renderList();}
+function updateIntChips(){['excel','notion','gmail','sms','cal'].forEach(k=>{const el=document.getElementById('chip-'+k);if(el)el.className='int-chip'+(ints[k]?' on':'');});}
+
+// ── Stats ──────────────────────────────────────────────────────────────────
+function updateStats(){
+  const ip=quotes.filter(q=>!['accepted','declined'].includes(q.status));
+  document.getElementById('stat-total').textContent=quotes.length;
+  document.getElementById('stat-red').textContent=quotes.filter(q=>q.priority==='red').length;
+  document.getElementById('stat-open').textContent=ip.length;
+  document.getElementById('stat-acc').textContent=quotes.filter(q=>q.status==='accepted').length;
+  const nm=quotes.filter(q=>{if(!q.created)return false;const d=new Date(q.created+'T00:00:00');return d.getMonth()===TM&&d.getFullYear()===TY;}).length;
+  document.getElementById('stat-new').textContent=nm;
+  const hc=document.getElementById('hero-clients');
+  const show=ip.slice(0,3),extra=ip.length-show.length;
+  hc.innerHTML=show.map(q=>`<div class="hero-row"><div class="hero-av">${ini(q.client)}</div><div class="hero-name">${q.client}</div><div class="hero-num">${q.number}</div></div>`).join('')+(extra>0?`<div style="font-size:10px;color:var(--text3);font-family:'DM Mono',monospace;margin-top:2px">+${extra} more</div>`:'');
+  document.getElementById('hero-month').textContent=(MONTHS[TM]+' '+TY).toUpperCase();
+}
+
+// ── Render list ────────────────────────────────────────────────────────────
+function renderList(){
+  const q=(document.getElementById('search').value||'').toLowerCase();
+  const filtered=quotes.filter(x=>{
+    const ms=!q||x.client.toLowerCase().includes(q)||x.number.toLowerCase().includes(q)||(x.keyword||'').toLowerCase().includes(q);
+    const mf=activeFilter==='all'||x.priority===activeFilter||(activeFilter==='accepted'&&x.status==='accepted');
+    const sf=!activeStageFilter||x.status===activeStageFilter;
+    return ms&&mf&&sf;
+  });
+  const list=document.getElementById('quote-list');
+  list.innerHTML='';
+  if(!filtered.length){list.innerHTML='<div class="empty-state">No quotes found</div>';}
+  else filtered.forEach(x=>list.appendChild(buildCard(x)));
+  updateStats();
+}
+
+function setFilter(btn){document.querySelectorAll('.filter-btn').forEach(b=>b.classList.remove('active'));btn.classList.add('active');activeFilter=btn.dataset.f;renderList();}
+
+// ── Build card ─────────────────────────────────────────────────────────────
+function buildCard(q){
+  const div=document.createElement('div');
+  div.className='quote-card';div.id='card-'+q.id;
+  const barC={red:'#E24B4A',orange:'#EF9F27',yellow:'#FAC775','':'var(--border)'}[q.priority||''];
+  const st=STAGES[q.status]||STAGES.open;
+  const isOpen=expandedIds.has(q.id);
+  const hasDesign=q.designUrl&&q.designUrl.trim();
+
+  // Emails & phones display
+  // Contact dropdowns rendered on-demand via toggleContactDrop
+
+  // Recordings rendered async from IDB
+  const recsHtml='';
+
+  div.innerHTML=`
+    <div class="qheader" onclick="toggleCard('${q.id}')">
+      <div class="prio-stack" onclick="event.stopPropagation()">
+        <div class="pdot r ${q.priority==='red'?'on':'off'}" onclick="setPrio('${q.id}','red')" title="High — alert today 4 pm"></div>
+        <div class="pdot o ${q.priority==='orange'?'on':'off'}" onclick="setPrio('${q.id}','orange')" title="Medium — alert tomorrow 4 pm"></div>
+        <div class="pdot y ${q.priority==='yellow'?'on':'off'}" onclick="setPrio('${q.id}','yellow')" title="Low — end of next week 4 pm"></div>
+      </div>
+      <div class="pbar" style="background:${barC}"></div>
+      <div class="qinfo">
+        <div class="qnum">${q.number}</div>
+        <div class="qclient">${q.client}</div>
+        ${q.keyword?`<div class="qkeyword">${q.keyword}</div>`:''}
+      </div>
+      <div class="qmeta">
+        ${q.amount?`<span class="qamt">$${Number(q.amount).toLocaleString()}</span>`:''}
+        <div style="display:flex;flex-direction:column;align-items:center;gap:2px">
+          <div style="font-size:9px;font-family:'DM Mono',monospace;color:var(--text3);letter-spacing:.5px;text-transform:uppercase;text-align:center">Stage</div>
+          <div class="stage-wrap" onclick="event.stopPropagation()">
+          <div class="stage-pill ${st.cls}" id="pill-${q.id}" onclick="toggleStageDD('${q.id}')">${st.label}</div>
+          <div class="stage-dropdown" id="dd-${q.id}" style="display:none">
+            ${Object.entries(STAGES).map(([k,v])=>`<div class="stage-opt" onclick="setStage('${q.id}','${k}')"><span class="dot" style="background:${v.dot}"></span>${v.label}</div>`).join('')}
+          </div>
+        </div>
+        </div>
+        <span class="chev ${isOpen?'open':''}">&#9662;</span>
+      </div>
+    </div>
+    <div class="qbody ${isOpen?'open':''}">
+      ${(q.keyword&&hasDesign)?`<div class="design-row"><span class="keyword-badge">${q.keyword}</span><a class="design-link" href="${q.designUrl}" target="_blank">&#9670; Designs</a></div>`:
+        q.keyword?`<div class="design-row"><span class="keyword-badge">${q.keyword}</span>${hasDesign?`<a class="design-link" href="${q.designUrl}" target="_blank">&#9670; Designs</a>`:''}</div>`:''}
+
+      <div class="dates-row">
+        <div class="date-field">
+          <div class="fl">Start date</div>
+          <input type="date" value="${q.startDate||''}" onchange="updateField('${q.id}','startDate',this.value)"/>
+        </div>
+        <div class="date-field">
+          <div class="fl">Completion date</div>
+          <input type="date" value="${q.endDate||''}" onchange="updateField('${q.id}','endDate',this.value)"/>
+        </div>
+      </div>
+
+      <div class="body-grid">
+        <div>
+          <div class="fl">Created</div>
+          <div class="fv" style="font-size:13px">${fmtDate(q.created)}</div>
+          ${q.desc?`<div class="fl" style="margin-top:12px">Scope</div><div class="fv" style="font-size:13px;color:var(--text2)">${q.desc}</div>`:''}
+          ${q.priority?`<div style="margin-top:10px;font-size:10px;font-family:'DM Mono',monospace;color:var(--text3)">ntfy: ${schedLabel(q.priority)}</div>`:''}
+        </div>
+        <div>
+          <div class="fl">Contacts</div>
+          <div id="contact-list-${q.id}" style="margin-top:4px">
+            ${buildContactList(q)}
+          </div>
+        </div>
+      </div>
+
+      <div class="fl" style="margin-top:4px">Notes</div>
+      <textarea class="notes-area" id="notes-${q.id}" placeholder="Add notes…" oninput="schedNotes('${q.id}',this.value)">${q.notes||''}</textarea>
+      <div class="rec-bar">
+        <button class="rec-btn" id="rec-btn-${q.id}" onclick="toggleRecording('${q.id}')">
+          <span class="rec-dot"></span> Record voice note
+        </button>
+        <span id="rec-timer-${q.id}" style="font-size:11px;color:var(--red-txt);font-family:'DM Mono',monospace;display:none">0:00</span>
+      </div>
+      <div class="recordings-list" id="recs-${q.id}"></div>
+
+      <div class="body-actions">
+        <button class="abtn" onclick="editQuote('${q.id}')">✎ Edit</button>
+        <button class="abtn" onclick="generatePDF('${q.id}')">⬇ Quote PDF</button>
+        ${ints.gmail&&(q.contacts||[]).some(c=>c.email)?`<button class="abtn" onclick="emailContact('${q.id}')">✉ Email</button>`:''}
+        ${ints.sms&&(q.contacts||[]).some(c=>c.phone)?`<button class="abtn" onclick="smsContact('${q.id}')">☏ SMS</button>`:''}
+        ${(q.startDate||q.endDate)?`<button class="abtn" onclick="syncCalendar('${q.id}')">📅 Sync dates</button>`:''}
+        ${ints.notion?`<button class="abtn" onclick="toast('Syncing to Notion...')">N Notion</button>`:''}
+        ${ints.excel?`<button class="abtn" onclick="exportCSV()">⊞ Export</button>`:''}
+        <button class="abtn abtn-del" onclick="deleteQuote('${q.id}')">✕ Delete</button>
+      </div>
+    </div>`;
+  return div;
+}
+
+function toggleCard(id){
+  if(expandedIds.has(id))expandedIds.delete(id);
+  else{expandedIds.add(id);setTimeout(()=>renderRecordingsForQuote(id),50);}
+  renderList();
+}
+
+// ── Stage dropdown ─────────────────────────────────────────────────────────
+function toggleStageDD(id){
+  const dd=document.getElementById('dd-'+id);
+  if(!dd)return;
+  const isOpen=dd.style.display!=='none';
+  closeAllDropdowns();
+  if(!isOpen){dd.style.display='block';activeDropdown=id;}
+}
+function closeAllDropdowns(){document.querySelectorAll('.stage-dropdown').forEach(d=>d.style.display='none');activeDropdown=null;}
+function closeDropdownsOutside(e){
+  if(activeDropdown&&!e.target.closest('.stage-wrap'))closeAllDropdowns();
+  if(!e.target.closest('.stage-filter-wrap')){const dd=document.getElementById('stage-filter-dd');if(dd)dd.style.display='none';}
+}
+function setStage(id,status){
+  const q=quotes.find(x=>x.id===id);if(!q)return;
+  q.status=status;save();closeAllDropdowns();renderList();
+  // Sync to Notion if start/end dates set
+  
+}
+
+// ── Instant notify ─────────────────────────────────────────────────────────
+function notifyNow(id){
+  const q=quotes.find(x=>x.id===id);if(!q)return;
+  const topic=settings.ntfyTopic;
+  if(!topic){toast('Add your ntfy topic in Settings first');return;}
+  const lm={red:'🔴 HIGH',orange:'🟠 MEDIUM',yellow:'🟡 LOW','':'📋'}[q.priority||''];
+  const st=STAGES[q.status]?.label||q.status;
+  sendNtfy(topic,`${lm} ${q.client}`,`Quote: ${q.number}\nStage: ${st}\nAmount: $${Number(q.amount||0).toLocaleString()}\n${q.notes?'Note: '+q.notes.substring(0,80):''}`,q.priority==='red'?'urgent':q.priority==='orange'?'high':'default');
+  toast('Notification sent for '+q.client);
+}
+
+// ── Stage filter ───────────────────────────────────────────────────────────
+let activeStageFilter='';
+function toggleStageFilter(){
+  const dd=document.getElementById('stage-filter-dd');
+  if(!dd)return;
+  const open=dd.style.display!=='none';
+  closeAllDropdowns();
+  if(!open){dd.style.display='block';}
+}
+function setStageFilter(stage){
+  activeStageFilter=stage;
+  const btn=document.getElementById('stage-filter-btn');
+  const label=stage?STAGES[stage]?.label||stage:'Stage';
+  if(btn)btn.textContent=(stage?label:'Stage')+' ▾';
+  if(btn)btn.classList.toggle('active',!!stage);
+  document.getElementById('stage-filter-dd').style.display='none';
+  renderList();
+}
+
+// ── Priority + ntfy ────────────────────────────────────────────────────────
+function setPrio(id,p){
+  const q=quotes.find(x=>x.id===id);if(!q)return;
+  q.priority=q.priority===p?'':p;save();
+  if(q.priority){
+    const t=settings.ntfyTopic;
+    if(!t){toast('Add your ntfy topic in Settings to schedule alerts');}
+    else{scheduleNtfy(q);const ft=getFireTime(q.priority);toast('ntfy alert: '+ft.toLocaleString('en-CA',{weekday:'short',hour:'2-digit',minute:'2-digit'}));}
+  } else {
+    clearNtfy(id);toast('Priority cleared');
+  }
+  renderList();
+}
+
+function getFireTime(p){
+  const t=new Date();
+  if(p==='red'){t.setHours(16,0,0,0);if(t<=new Date())t.setDate(t.getDate()+1);}
+  else if(p==='orange'){t.setDate(t.getDate()+1);t.setHours(16,0,0,0);}
+  else if(p==='yellow'){const d=t.getDay();const dtf=((5-d+7)%7)+7;t.setDate(t.getDate()+dtf);t.setHours(16,0,0,0);}
+  return t;
+}
+function schedLabel(p){const t=getFireTime(p);return t.toLocaleDateString('en-CA',{weekday:'short',month:'short',day:'numeric',hour:'2-digit',minute:'2-digit'});}
+
+function scheduleNtfy(q){
+  clearNtfy(q.id);
+  const topic=settings.ntfyTopic;if(!topic||!q.priority)return;
+  const ms=getFireTime(q.priority)-new Date();if(ms<=0)return;
+  const pm={red:'urgent',orange:'high',yellow:'default'};
+  const lm={red:'🔴 HIGH',orange:'🟠 MEDIUM',yellow:'🟡 LOW'};
+  ntfyTimers[q.id]=setTimeout(()=>{
+    sendNtfy(topic,`${lm[q.priority]}: ${q.client}`,`Quote ${q.number} needs attention.\nAmount: $${Number(q.amount||0).toLocaleString()}\nStage: ${STAGES[q.status]?.label||q.status}`,pm[q.priority]);
+  },ms);
+}
+function clearNtfy(id){if(ntfyTimers[id]){clearTimeout(ntfyTimers[id]);delete ntfyTimers[id];}}
+
+async function sendNtfy(topic,title,body,priority='default'){
+  if(!topic)return;
+  try{await fetch('https://ntfy.sh/'+topic,{method:'POST',headers:{'Title':title,'Priority':priority,'Tags':'briefcase','Content-Type':'text/plain'},body});}
+  catch(e){console.warn('ntfy:',e);}
+}
+function testNtfy(){const t=settings.ntfyTopic;if(!t){toast('Set your ntfy topic in Settings first');return;}sendNtfy(t,'ANDGAR FPE connected!','Push notifications are working.','low');toast('Test sent to ntfy/'+t);}
+
+// ── Notion calendar sync via email ─────────────────────────────────────────
+function syncCalendar(id){
+  const q=quotes.find(x=>x.id===id); if(!q)return;
+  if(!q.startDate&&!q.endDate){toast('Set a start or end date first');return;}
+
+  // Build .ics file content
+  const now=new Date().toISOString().replace(/[-:]/g,'').split('.')[0]+'Z';
+  const title=encodeURIComponent(`${q.number} – ${q.client}`);
+  const desc=`Quote: ${q.number}\nClient: ${q.client}\nStage: ${STAGES[q.status]?.label||q.status}\nAmount: $${Number(q.amount||0).toLocaleString()}\n${q.desc||''}`.replace(/\n/g,'\\n');
+
+  function toICSDate(d){ return d.replace(/-/g,''); }
+
+  const start = q.startDate ? toICSDate(q.startDate) : toICSDate(q.endDate);
+  const end   = q.endDate   ? toICSDate(q.endDate)   : toICSDate(q.startDate);
+
+  const ics = [
+    'BEGIN:VCALENDAR',
+    'VERSION:2.0',
+    'PRODID:-//ANDGAR FPE//Quote Manager//EN',
+    'CALSCALE:GREGORIAN',
+    'METHOD:PUBLISH',
+    'BEGIN:VEVENT',
+    `UID:${q.id}@andgar-fpe`,
+    `DTSTAMP:${now}`,
+    `DTSTART;VALUE=DATE:${start}`,
+    `DTEND;VALUE=DATE:${end}`,
+    `SUMMARY:${q.number} – ${q.client}`,
+    `DESCRIPTION:${desc}`,
+    'END:VEVENT',
+    'END:VCALENDAR'
+  ].join('\r\n');
+
+  // Download the .ics file — opens in Outlook AND Notion imports it
+  const blob = new Blob([ics], {type:'text/calendar;charset=utf-8'});
+  const url  = URL.createObjectURL(blob);
+  const a    = document.createElement('a');
+  a.href = url;
+  a.download = `${q.number}-${(q.client||'event').replace(/\s+/g,'-')}.ics`;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+  toast('📅 Calendar file downloaded — open it to add to Outlook or Notion');
+}
+// ── Contacts ───────────────────────────────────────────────────────────────
+// ── Contacts (name + email + phone per person) ────────────────────────────
+function buildContactList(q){
+  const contacts = q.contacts || [];
+  // Pull all people from COMPANY_INDEX for this client
+  const clientLower = (q.client||'').toLowerCase();
+  const group = COMPANY_INDEX.find(g=>g.label.toLowerCase()===clientLower);
+  const dbPeople = group ? group.contacts : [];
+
+  // Merge: start with DB people, mark which are saved
+  const savedEmails = contacts.map(c=>c.email).filter(Boolean);
+  const savedPhones = contacts.map(c=>c.phone).filter(Boolean);
+
+  let rows = '';
+
+  // Show DB contacts first as selectable rows
+  if(dbPeople.length){
+    dbPeople.forEach((p,i)=>{
+      const isSaved = contacts.some(c=>c.email&&c.email===p.email);
+      rows += `<div class="contact-item" style="cursor:pointer;${isSaved?'background:var(--blue-bg);':'opacity:.75'}" onclick="toggleContact(event,'${q.id}',${i})">
+        <span class="ci">👤</span>
+        <span style="flex:1;font-weight:500">${p.name}</span>
+        <span style="font-size:11px;color:var(--text3);font-family:'DM Mono',monospace">${isSaved?'✓ added':''}</span>
+      </div>
+      ${isSaved ? `<div style="padding:2px 10px 6px 34px;font-size:11px;color:var(--text2)">
+        ${p.email?`<span onclick="event.stopPropagation();window.location.href='mailto:${p.email}'" style="color:var(--blue-txt);text-decoration:none;margin-right:12px;cursor:pointer">✉ ${p.email}</span>`:''}
+        ${p.phone?`<span onclick="event.stopPropagation();window.location.href='tel:${p.phone}'" style="color:var(--blue-txt);text-decoration:none;cursor:pointer">☏ ${p.phone}</span>`:''}
+      </div>` : ''}`;
+    });
+  }
+
+  // Show manually-added contacts not in DB
+  contacts.filter(c=>!dbPeople.some(p=>p.email&&p.email===c.email)).forEach((c,i)=>{
+    rows += `<div class="contact-item">
+      <span class="ci">👤</span>
+      <span style="flex:1">${c.name||c.email||c.phone}</span>
+      <span class="rm" onclick="removeContactRow(event,'${q.id}','manual',${i})">✕</span>
+    </div>
+    <div style="padding:2px 10px 6px 34px;font-size:11px;color:var(--text2)">
+      ${c.email?`<span onclick="event.stopPropagation();window.location.href='mailto:${c.email}'" style="color:var(--blue-txt);cursor:pointer;margin-right:12px">✉ ${c.email}</span>`:''}
+      ${c.phone?`<span onclick="event.stopPropagation();window.location.href='tel:${c.phone}'" style="color:var(--blue-txt);cursor:pointer">☏ ${c.phone}</span>`:''}
+    </div>`;
+  });
+
+  // Add manual contact form
+  rows += `<div class="add-contact" style="margin-top:6px;flex-wrap:wrap;gap:4px">
+    <input type="text"   id="add-cname-${q.id}"  placeholder="Name" style="min-width:90px;flex:1"/>
+    <input type="email"  id="add-cemail-${q.id}" placeholder="Email" style="min-width:120px;flex:2"/>
+    <input type="tel"    id="add-cphone-${q.id}" placeholder="Phone" style="min-width:100px;flex:1"/>
+    <button class="btn btn-sm" onclick="addContactRow(event,'${q.id}')">+ Add</button>
+  </div>`;
+
+  return rows;
+}
+
+function toggleContact(e, id, dbIdx){
+  e.stopPropagation();
+  const q=quotes.find(x=>x.id===id); if(!q)return;
+  const clientLower=(q.client||'').toLowerCase();
+  const group=COMPANY_INDEX.find(g=>g.label.toLowerCase()===clientLower);
+  if(!group)return;
+  const p=group.contacts[dbIdx]; if(!p)return;
+  if(!q.contacts)q.contacts=[];
+  const existing=q.contacts.findIndex(c=>c.email&&c.email===p.email);
+  if(existing>=0) q.contacts.splice(existing,1);
+  else q.contacts.push({name:p.name,email:p.email||'',phone:p.phone||''});
+  save(); refreshContactList(id);
+}
+
+function addContactRow(e, id){
+  e.stopPropagation();
+  const q=quotes.find(x=>x.id===id); if(!q)return;
+  const name=(document.getElementById('add-cname-'+id)?.value||'').trim();
+  const email=(document.getElementById('add-cemail-'+id)?.value||'').trim();
+  const phone=(document.getElementById('add-cphone-'+id)?.value||'').trim();
+  if(!name&&!email&&!phone)return;
+  if(!q.contacts)q.contacts=[];
+  q.contacts.push({name,email,phone});
+  save(); refreshContactList(id);
+}
+
+function removeContactRow(e, id, type, idx){
+  e.stopPropagation();
+  const q=quotes.find(x=>x.id===id); if(!q)return;
+  // Remove from manually-added contacts (those not in DB)
+  const clientLower=(q.client||'').toLowerCase();
+  const group=COMPANY_INDEX.find(g=>g.label.toLowerCase()===clientLower);
+  const dbEmails=(group?group.contacts:[]).map(p=>p.email).filter(Boolean);
+  const manual=q.contacts.filter(c=>!dbEmails.includes(c.email));
+  const toRemove=manual[idx]; if(!toRemove)return;
+  q.contacts=q.contacts.filter(c=>c!==toRemove);
+  save(); refreshContactList(id);
+}
+
+function refreshContactList(id){
+  const q=quotes.find(x=>x.id===id); if(!q)return;
+  const el=document.getElementById('contact-list-'+id);
+  if(el) el.innerHTML=buildContactList(q);
+}
+
+function emailContact(id){
+  const q=quotes.find(x=>x.id===id); if(!q)return;
+  const emails=(q.contacts||[]).map(c=>c.email).filter(Boolean);
+  if(!emails.length)return;
+  window.location.href=`mailto:${emails.join(',')}?subject=Re: Quote ${q.number}`;
+}
+
+function smsContact(id){
+  const q=quotes.find(x=>x.id===id); if(!q)return;
+  const phone=(q.contacts||[]).map(c=>c.phone).filter(Boolean)[0];
+  if(!phone)return;
+  window.location.href=`tel:${phone}`;
+}
+
+function toggleContactList(e, id, type){
+  e.stopPropagation();
+  const panel = document.getElementById('contact-list-'+id);
+  if(!panel) return;
+  const activeType = panel.dataset.type;
+  // If clicking same icon, hide
+  if(panel.style.display !== 'none' && activeType === type){
+    panel.style.display = 'none';
+    panel.dataset.type = '';
+    return;
+  }
+  // Show for this type
+  panel.dataset.type = type;
+  panel.style.display = 'block';
+  renderContactPanel(id, type);
+}
+
+function renderContactPanel(id, type){
+  const q = quotes.find(x=>x.id===id);
+  const panel = document.getElementById('contact-list-'+id);
+  if(!q||!panel) return;
+
+  const items = type==='email' ? (q.emails||[]) : (q.phones||[]);
+  const icon = type==='email' ? '✉' : '☏';
+  const linkPre = type==='email' ? 'mailto:' : 'tel:';
+  const inputType = type==='email' ? 'email' : 'tel';
+  const placeholder = type==='email' ? 'Add email address…' : 'Add phone number…';
+  const inputId = 'cpanel-input-'+id+'-'+type;
+
+  // Company suggestions not yet saved
+  const clientLower = (q.client||'').toLowerCase();
+  const group = COMPANY_INDEX.find(g=>g.label.toLowerCase()===clientLower);
+  const suggestions = group ? group.contacts.filter(c=>{
+    const val = type==='email' ? c.email : c.phone;
+    return val && !items.includes(val);
+  }) : [];
+
+  let rows = '';
+
+  if(suggestions.length){
+    rows += `<div class="fl" style="margin-bottom:4px">From database</div>`;
+    rows += suggestions.map(c=>{
+      const val = type==='email' ? c.email : c.phone;
+      return `<div class="contact-item" style="cursor:pointer" onclick="addContactFromPanel('${id}','${type}','${val.replace(/'/g,"\'")}','${c.name.replace(/'/g,"\'")}')">
+        <span class="ci">${icon}</span>
+        <span style="flex:1">${c.name} <span style="color:var(--text3);font-size:11px">— ${val}</span></span>
+        <span style="font-size:11px;color:var(--blue-txt)">+ Add</span>
+      </div>`;
+    }).join('');
+  }
+
+  if(items.length){
+    if(suggestions.length) rows += `<div style="height:1px;background:var(--border);margin:6px 0"></div>`;
+    rows += `<div class="fl" style="margin-bottom:4px">Saved</div>`;
+    rows += items.map((val,i)=>`
+      <div class="contact-item">
+        <span class="ci">${icon}</span>
+        <a href="${linkPre}${val}" style="flex:1;color:var(--text);text-decoration:none">${val}</a>
+        <span class="rm" onclick="removeContactPanel(event,'${id}','${type}',${i})">✕</span>
+      </div>`).join('');
+  }
+
+  if(!items.length && !suggestions.length){
+    rows = `<div style="font-size:12px;color:var(--text3);font-style:italic;padding:4px 0">No ${type==='email'?'emails':'phone numbers'} — add one below</div>`;
+  }
+
+  panel.innerHTML = `
+    <div style="background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:12px 14px">
+      ${rows}
+      <div class="add-contact" style="margin-top:8px">
+        <input type="${inputType}" id="${inputId}" placeholder="${placeholder}"/>
+        <button class="btn btn-sm" onclick="addContactPanel('${id}','${type}')">+ Add</button>
+      </div>
+    </div>`;
+}
+
+function addContactFromPanel(id, type, val, name){
+  const q = quotes.find(x=>x.id===id); if(!q) return;
+  if(type==='email'){ if(!q.emails)q.emails=[]; if(!q.emails.includes(val))q.emails.push(val); }
+  else{ if(!q.phones)q.phones=[]; if(!q.phones.includes(val))q.phones.push(val); }
+  save();
+  renderContactPanel(id, type);
+  updateContactBtn(id, type, q);
+  toast('Added: '+val);
+}
+
+function addContactPanel(id, type){
+  const inputId = 'cpanel-input-'+id+'-'+type;
+  const inp = document.getElementById(inputId);
+  const val = (inp&&inp.value||'').trim(); if(!val) return;
+  const q = quotes.find(x=>x.id===id); if(!q) return;
+  if(type==='email'){ if(!q.emails)q.emails=[]; q.emails.push(val); }
+  else{ if(!q.phones)q.phones=[]; q.phones.push(val); }
+  save(); if(inp)inp.value='';
+  renderContactPanel(id, type);
+  updateContactBtn(id, type, q);
+}
+
+function removeContactPanel(e, id, type, idx){
+  e.stopPropagation();
+  const q = quotes.find(x=>x.id===id); if(!q) return;
+  if(type==='email') q.emails.splice(idx,1);
+  else q.phones.splice(idx,1);
+  save();
+  renderContactPanel(id, type);
+  updateContactBtn(id, type, q);
+}
+
+
+// ── Field updates ──────────────────────────────────────────────────────────
+function updateField(id,field,val){
+  const q=quotes.find(x=>x.id===id);if(!q)return;
+  q[field]=val;save();updateStats();renderCalendar();
+  
+}
+
+// ── Notes ──────────────────────────────────────────────────────────────────
+function schedNotes(id,val){
+  if(notesTimers[id])clearTimeout(notesTimers[id]);
+  notesTimers[id]=setTimeout(()=>{const q=quotes.find(x=>x.id===id);if(q){q.notes=val;save();}},600);
+}
+
+// ── Voice recording ────────────────────────────────────────────────────────
+let activeRecorders={};
+// ── Transcript (Web Speech API) auto-runs during recording ───────────────
+const activeTranscripts = {};
+
+function toggleRecording(id){
+  if(activeRecorders[id]){ stopRecording(id); stopTranscript(id); }
+  else { startRecording(id); startTranscript(id); }
+}
+
+function startTranscript(id){
+  const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+  if(!SpeechRecognition) return; // silently skip if not supported
+  const recog = new SpeechRecognition();
+  recog.continuous = true;
+  recog.interimResults = true;
+  recog.lang = 'en-US';
+  let finalText = '';
+  recog.onresult = (e) => {
+    for(let i=e.resultIndex;i<e.results.length;i++){
+      if(e.results[i].isFinal) finalText += e.results[i][0].transcript + ' ';
+    }
+    if(activeTranscripts[id]) activeTranscripts[id]._text = finalText;
+  };
+  recog.onerror = () => {};
+  recog.onend = () => { if(activeTranscripts[id]===recog) recog.start(); };
+  recog.start();
+  recog._text = '';
+  activeTranscripts[id] = recog;
+}
+
+function stopTranscript(id){
+  const recog = activeTranscripts[id];
+  if(!recog) return;
+  recog.onend = null;
+  recog.stop();
+  const text = (recog._text||'').trim();
+  delete activeTranscripts[id];
+  if(text){
+    // Store transcript on the recording (attached at save time via _pendingTranscript)
+    activeTranscripts['_pending_'+id] = text;
+  }
+}
+async function startRecording(id){
+  try{
+    const stream=await navigator.mediaDevices.getUserMedia({audio:true});
+    const mr=new MediaRecorder(stream);
+    const chunks=[];
+    mr.ondataavailable=e=>chunks.push(e.data);
+    mr.onstop=async ()=>{
+      const blob=new Blob(chunks,{type:'audio/webm'});
+      const blobUrl=URL.createObjectURL(blob);
+      const date=new Date().toLocaleString('en-CA',{year:'numeric',month:'short',day:'numeric',hour:'2-digit',minute:'2-digit'});
+      const pendingKey='_pending_'+id;
+      const transcript = activeTranscripts[pendingKey]||'';
+      delete activeTranscripts[pendingKey];
+      await saveRecordingIDB(id, blobUrl, date, transcript);
+      URL.revokeObjectURL(blobUrl);
+      stream.getTracks().forEach(t=>t.stop());
+      delete activeRecorders[id];
+      const btn=document.getElementById('rec-btn-'+id);
+      if(btn){btn.className='rec-btn';btn.innerHTML='<span class="rec-dot"></span> Record voice note';}
+      const timerEl=document.getElementById('rec-timer-'+id);
+      if(timerEl)timerEl.style.display='none';
+      renderRecordingsForQuote(id);
+    };
+    mr.start();
+    activeRecorders[id]={mr,startTime:Date.now()};
+    const btn=document.getElementById('rec-btn-'+id);
+    if(btn){btn.className='rec-btn recording';btn.innerHTML='<span class="rec-dot"></span> Stop recording';}
+    const timerEl=document.getElementById('rec-timer-'+id);
+    if(timerEl)timerEl.style.display='inline';
+    // Tick timer
+    activeRecorders[id].timerInterval=setInterval(()=>{
+      if(!activeRecorders[id])return;
+      const s=Math.floor((Date.now()-activeRecorders[id].startTime)/1000);
+      const el=document.getElementById('rec-timer-'+id);
+      if(el)el.textContent=`${Math.floor(s/60)}:${String(s%60).padStart(2,'0')}`;
+    },1000);
+  } catch(e){toast('Microphone access denied');}
+}
+function stopRecording(id){
+  if(!activeRecorders[id])return;
+  clearInterval(activeRecorders[id].timerInterval);
+  activeRecorders[id].mr.stop();
+}
+// deleteRecording replaced by delRecIDB
+
+// ── Priority ───────────────────────────────────────────────────────────────
+
+// ── Calendar ───────────────────────────────────────────────────────────────
+function toggleCal(){
+  const o=document.getElementById('cal-overlay');
+  o.style.display=o.style.display==='none'?'flex':'none';
+  if(o.style.display==='flex')renderCalendar();
+}
+function calOverlayClick(e){if(e.target===document.getElementById('cal-overlay'))toggleCal();}
+function calNav(dir){calMonth+=dir;if(calMonth>11){calMonth=0;calYear++;}else if(calMonth<0){calMonth=11;calYear--;}renderCalendar();}
+
+function getCalEvents(){
+  const evs=[];
+  quotes.forEach(q=>{
+    if(q.startDate)evs.push({date:q.startDate,label:`Start: ${q.number}`,sub:q.client,num:q.number,color:{red:'#E24B4A',orange:'#EF9F27',yellow:'#FAC775','':'#185FA5'}[q.priority||'']});
+    if(q.endDate)evs.push({date:q.endDate,label:`End: ${q.number}`,sub:q.client,num:q.number,color:'#3B6D11'});
+  });
+  return evs;
+}
+
+function renderCalendar(){
+  document.getElementById('cal-month-label').textContent=MONTHS[calMonth]+' '+calYear;
+  const evs=getCalEvents();
+  const evMap={};
+  evs.forEach(e=>{if(!evMap[e.date])evMap[e.date]=[];evMap[e.date].push(e);});
+
+  const firstDay=new Date(calYear,calMonth,1).getDay();
+  const daysInMonth=new Date(calYear,calMonth+1,0).getDate();
+  const daysInPrev=new Date(calYear,calMonth,0).getDate();
+  const todayStr=`${TY}-${String(TM+1).padStart(2,'0')}-${String(NOW.getDate()).padStart(2,'0')}`;
+
+  let html='';
+  // Prev month
+  for(let i=firstDay-1;i>=0;i--){
+    html+=`<div class="cal-cell other-month"><div class="cal-day-num">${daysInPrev-i}</div></div>`;
+  }
+  // This month
+  for(let d=1;d<=daysInMonth;d++){
+    const ds=`${calYear}-${String(calMonth+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+    const dayEvs=evMap[ds]||[];
+    const isToday=ds===todayStr;
+    const isSel=ds===calSelectedDate;
+    html+=`<div class="cal-cell${isToday?' today':''}${isSel?' selected':''}" onclick="selectCalDay('${ds}')">
+      <div class="cal-day-num" style="${isToday?'font-weight:600;color:var(--text)':''}">${d}</div>
+      <div class="cal-event-dots">${dayEvs.slice(0,3).map(e=>`<span class="cal-edot" style="background:${e.color}" title="${e.label}"></span>`).join('')}</div>
+    </div>`;
+  }
+  // Next month padding
+  const totalCells=Math.ceil((firstDay+daysInMonth)/7)*7;
+  for(let d=1;d<=totalCells-firstDay-daysInMonth;d++){
+    html+=`<div class="cal-cell other-month"><div class="cal-day-num">${d}</div></div>`;
+  }
+  document.getElementById('cal-cells').innerHTML=html;
+
+  // Events list for selected date or today
+  const showDate=calSelectedDate||todayStr;
+  const showEvs=evMap[showDate]||[];
+  const el=document.getElementById('cal-events-list');
+  if(!showEvs.length){
+    el.innerHTML=`<div style="font-size:12px;color:var(--text3);padding:8px 0;font-family:'DM Mono',monospace">${fmtDate(showDate)} — no events</div>`;
+  } else {
+    el.innerHTML=`<div class="cal-events-section-label">${fmtDate(showDate)}</div>`+showEvs.map(e=>`<div class="cal-event-item"><div class="cal-event-bar" style="background:${e.color}"></div><div><div class="cal-event-name">${e.label}</div><div class="cal-event-sub">${e.sub||''}</div></div></div>`).join('');
+  }
+}
+
+function selectCalDay(ds){calSelectedDate=ds;renderCalendar();}
+
+// ── CRUD modals ────────────────────────────────────────────────────────────
+function openNewModal(){
+  editingId=null;
+  document.getElementById('modal-title').textContent='New quote';
+  ['client','number','amount','keyword','desc','designurl'].forEach(f=>{const el=document.getElementById('f-'+f);if(el)el.value='';});
+  document.getElementById('f-status').value='open';
+  // contacts managed via expanded card
+  document.getElementById('f-start').value='';
+  document.getElementById('f-end').value='';
+  document.getElementById('modal-overlay').style.display='flex';
+}
+
+function editQuote(id){
+  editingId=id;
+  const q=quotes.find(x=>x.id===id);if(!q)return;
+  document.getElementById('modal-title').textContent='Edit quote';
+  document.getElementById('f-client').value=q.client||'';
+  document.getElementById('f-number').value=q.number||'';
+  document.getElementById('f-amount').value=q.amount||'';
+  document.getElementById('f-keyword').value=q.keyword||'';
+  document.getElementById('f-desc').value=q.desc||'';
+  document.getElementById('f-designurl').value=q.designUrl||'';
+  document.getElementById('f-status').value=q.status||'open';
+  // contacts managed via expanded card
+  document.getElementById('f-start').value=q.startDate||'';
+  document.getElementById('f-end').value=q.endDate||'';
+  document.getElementById('modal-overlay').style.display='flex';
+}
+
+function saveQuote(){
+  const client=document.getElementById('f-client').value.trim();
+  const number=document.getElementById('f-number').value.trim();
+  if(!client||!number){toast('Client name and quote # required');return;}
+  const emails=[];
+  const phones=[];
+  const data={
+    client,number,
+    amount:document.getElementById('f-amount').value,
+    keyword:document.getElementById('f-keyword').value.trim().toUpperCase(),
+    desc:document.getElementById('f-desc').value.trim(),
+    designUrl:document.getElementById('f-designurl').value.trim(),
+    status:document.getElementById('f-status').value,
+    contacts:[],
+    startDate:document.getElementById('f-start').value,
+    endDate:document.getElementById('f-end').value,
+  };
+  if(editingId){
+    const q=quotes.find(x=>x.id===editingId);
+    if(q)Object.assign(q,data);
+  } else {
+    quotes.unshift({id:'q'+Date.now(),...data,priority:'',created:new Date().toISOString().split('T')[0],notes:'',recordings:[]});
+  }
+  save();closeModal();renderList();renderCalendar();
+  toast(editingId?'Quote updated':'Quote created');
+}
+
+function deleteQuote(id){
+  if(!confirm('Delete this quote?'))return;
+  quotes=quotes.filter(q=>q.id!==id);expandedIds.delete(id);clearNtfy(id);save();renderList();renderCalendar();toast('Deleted');
+}
+
+function closeModal(){document.getElementById('modal-overlay').style.display='none';hideModalPeoplePicker();}
+
+// ── Settings ───────────────────────────────────────────────────────────────
+function openSettings(){
+  document.getElementById('s-biz').value=settings.biz||'';
+  document.getElementById('s-email').value=settings.email||'';
+  document.getElementById('s-phone').value=settings.phone||'';
+  document.getElementById('s-ntfy').value=settings.ntfyTopic||'';
+  const nu=document.getElementById('s-notion-email');
+  if(nu)nu.value=settings.notionEmail||'';
+  const cu=document.getElementById('s-current-user');
+  if(cu)cu.textContent=currentUser||'';
+  const um=document.getElementById('s-user-mgmt-pass');
+  if(um)um.style.display=isAdmin()?'block':'none';
+  ['admin-badge','admin-badge-settings'].forEach(id=>{const el=document.getElementById(id);if(el)el.style.display=isAdmin()?'inline-flex':'none';});
+  applyUserRole();
+  document.getElementById('s-notion-email').value=settings.notionEmail||'';
+  document.getElementById('settings-overlay').style.display='flex';
+}
+function closeSettings(){document.getElementById('settings-overlay').style.display='none';}
+function changeUserPass(){
+  if(!isAdmin()){toast('Admin only');return;}
+  const np=document.getElementById('s-new-pass').value.trim();
+  if(!np||np.length<4){toast('Password must be at least 4 characters');return;}
+  // Store updated password persistently
+  try{
+    const passes=JSON.parse(localStorage.getItem('af_passes')||'{}');
+    passes['andgar']=np;
+    localStorage.setItem('af_passes',JSON.stringify(passes));
+    USERS['andgar']=np;
+    document.getElementById('s-new-pass').value='';
+    toast('Password updated for andgar');
+  }catch(e){toast('Failed to save password');}
+}
+function saveSettings(){
+  settings.biz=document.getElementById('s-biz').value.trim()||'ANDGAR FPE';
+  settings.email=document.getElementById('s-email').value.trim();
+  settings.phone=document.getElementById('s-phone').value.trim();
+  settings.ntfyTopic=document.getElementById('s-ntfy').value.trim();
+  settings.notionEmail=document.getElementById('s-notion-email').value.trim();
+  saveS();closeSettings();toast('Settings saved');
+  // Re-schedule any active ntfy timers
+  quotes.forEach(q=>{if(q.priority&&settings.ntfyTopic)scheduleNtfy(q);});
+}
+
+// ── PDF ────────────────────────────────────────────────────────────────────
+function generatePDF(id){
+  const q=quotes.find(x=>x.id===id);if(!q)return;
+  const {jsPDF}=window.jspdf;
+  const doc=new jsPDF({unit:'mm',format:'a4'});
+  const W=210,margin=20;let y=0;
+  doc.setFillColor(26,26,24);doc.rect(0,0,W,44,'F');
+  doc.setFont('helvetica','bold');doc.setFontSize(18);doc.setTextColor(245,244,240);
+  doc.text(settings.biz||'ANDGAR FPE',margin,18);
+  doc.setFont('helvetica','normal');doc.setFontSize(9);doc.setTextColor(160,160,150);
+  doc.text('QUOTATION',margin,27);
+  doc.setFont('helvetica','bold');doc.setFontSize(11);doc.setTextColor(245,244,240);
+  doc.text(q.number,W-margin,18,{align:'right'});
+  doc.setFont('helvetica','normal');doc.setFontSize(9);doc.setTextColor(160,160,150);
+  doc.text('Date: '+fmtDate(q.created),W-margin,26,{align:'right'});
+  y=58;
+  doc.setFont('helvetica','bold');doc.setFontSize(9);doc.setTextColor(140,138,130);doc.text('PREPARED FOR',margin,y);y+=6;
+  doc.setFont('helvetica','bold');doc.setFontSize(14);doc.setTextColor(26,26,24);doc.text(q.client,margin,y);y+=7;
+  doc.setFont('helvetica','normal');doc.setFontSize(10);doc.setTextColor(90,90,86);
+  (q.contacts||[]).forEach(c=>{
+    const line=[c.name,c.email,c.phone].filter(Boolean).join(' | ');
+    doc.text(line,margin,y);y+=5;
+  });
+  if(q.startDate){doc.text('Start: '+fmtDate(q.startDate),margin,y);y+=5;}
+  if(q.endDate){doc.text('Completion: '+fmtDate(q.endDate),W-margin,y-5,{align:'right'});}
+  if(q.keyword){doc.setFont('helvetica','bold');doc.setFontSize(9);doc.setTextColor(60,52,137);doc.text('# '+q.keyword,W-margin,y,{align:'right'});y+=2;}
+  y+=5;doc.setDrawColor(200,198,190);doc.setLineWidth(.3);doc.line(margin,y,W-margin,y);y+=10;
+  if(q.desc){doc.setFont('helvetica','bold');doc.setFontSize(9);doc.setTextColor(140,138,130);doc.text('SCOPE',margin,y);y+=6;doc.setFont('helvetica','normal');doc.setFontSize(11);doc.setTextColor(26,26,24);const ls=doc.splitTextToSize(q.desc,W-margin*2);doc.text(ls,margin,y);y+=ls.length*6+8;}
+  doc.setFillColor(230,228,220);doc.rect(margin,y,W-margin*2,8,'F');doc.setFont('helvetica','bold');doc.setFontSize(9);doc.setTextColor(26,26,24);doc.text('DESCRIPTION',margin+4,y+5.5);doc.text('AMOUNT',W-margin-4,y+5.5,{align:'right'});y+=8;
+  doc.setFillColor(255,255,255);doc.rect(margin,y,W-margin*2,12,'F');doc.setFont('helvetica','normal');doc.setFontSize(10);doc.setTextColor(26,26,24);doc.text((q.desc||'Professional services').substring(0,60),margin+4,y+8);doc.setFont('helvetica','bold');doc.text('$'+Number(q.amount||0).toLocaleString('en-CA',{minimumFractionDigits:2}),W-margin-4,y+8,{align:'right'});y+=12;
+  doc.setFillColor(26,26,24);doc.rect(margin,y,W-margin*2,12,'F');doc.setFont('helvetica','bold');doc.setFontSize(10);doc.setTextColor(245,244,240);doc.text('TOTAL',margin+4,y+8);doc.text('$'+Number(q.amount||0).toLocaleString('en-CA',{minimumFractionDigits:2}),W-margin-4,y+8,{align:'right'});y+=20;
+  if(q.notes){doc.setFont('helvetica','bold');doc.setFontSize(9);doc.setTextColor(140,138,130);doc.text('NOTES',margin,y);y+=6;doc.setFont('helvetica','normal');doc.setFontSize(10);doc.setTextColor(90,90,86);const nl=doc.splitTextToSize(q.notes,W-margin*2);doc.text(nl,margin,y);y+=nl.length*5+8;}
+  doc.setFillColor(26,26,24);doc.rect(0,282,W,15,'F');doc.setFont('helvetica','normal');doc.setFontSize(8);doc.setTextColor(140,138,130);doc.text('Generated by ANDGAR FPE  ·  '+new Date().toLocaleDateString('en-CA'),margin,290);
+  if(settings.email)doc.text(settings.email,W-margin,290,{align:'right'});
+  doc.save(`${q.number}-${q.client.replace(/\s+/g,'-')}.pdf`);
+  toast('PDF downloaded');
+}
+
+// ── Export CSV ─────────────────────────────────────────────────────────────
+function exportCSV(){
+  const h=['Quote #','Client','Amount','Stage','Priority','Keyword','Created','Start','End','Emails','Phones','Notes'];
+  const rows=quotes.map(q=>[q.number,q.client,q.amount||'',q.status,q.priority||'',q.keyword||'',q.created,q.startDate||'',q.endDate||'',(q.contacts||[]).map(c=>c.name||c.email).join(';'),(q.contacts||[]).map(c=>c.phone).filter(Boolean).join(';'),`"${(q.notes||'').replace(/"/g,'""')}"`]);
+  const csv=[h.join(','),...rows.map(r=>r.join(','))].join('\n');
+  const a=document.createElement('a');a.href='data:text/csv;charset=utf-8,'+encodeURIComponent(csv);a.download='andgar-fpe-export.csv';a.click();toast('CSV exported');
+}
+
+// ── Utilities ──────────────────────────────────────────────────────────────
+function fmtDate(d){if(!d)return'—';try{return new Date(d+'T00:00:00').toLocaleDateString('en-CA',{year:'numeric',month:'long',day:'numeric'});}catch(e){return d;}}
+function ini(n){return n.split(' ').slice(0,2).map(w=>w[0]).join('').toUpperCase();}
+function toast(msg){const t=document.getElementById('toast');t.textContent=msg;t.style.opacity='1';clearTimeout(toast._t);toast._t=setTimeout(()=>t.style.opacity='0',2800);}
+
+
+// ── Login ──────────────────────────────────────────────────────────────────
+const USERS = {'andgar': 'fpe2025', 'admin': 'andgar123'};
+const ADMIN_USER = 'admin';
+let currentUser = null;
+
+function checkLogin(){
+  try{
+    const stored = localStorage.getItem('af_auth');
+    if(stored){
+      const obj = JSON.parse(stored);
+      if(obj.user && USERS[obj.user]){ currentUser=obj.user; showApp(); return; }
+    }
+  }catch(e){}
+}
+function doLogin(){
+  const u=(document.getElementById('login-user').value||'').trim().toLowerCase();
+  const p=document.getElementById('login-pass').value||'';
+  const err=document.getElementById('login-err');
+  if(USERS[u]&&USERS[u]===p){
+    currentUser=u;
+    localStorage.setItem('af_auth',JSON.stringify({user:u}));
+    showApp();
+  } else {
+    err.textContent='Incorrect username or password';
+    document.getElementById('login-pass').value='';
+    setTimeout(()=>err.textContent='',3000);
+  }
+}
+async function showApp(){
+  document.getElementById('login-screen').style.display='none';
+  document.getElementById('main-app').style.display='block';
+  applyUserRole();
+  // Pull cloud data first — this sets the quotes variable — then init renders
+  await syncFromCloud();
+  init();
+}
+function logout(){
+  localStorage.removeItem('af_auth');
+  currentUser=null;
+  location.reload();
+}
+function isAdmin(){ return currentUser===ADMIN_USER; }
+function applyUserRole(){
+  // Show ADMIN badge in header and settings
+  ['admin-badge','admin-badge-settings'].forEach(id=>{
+    const el=document.getElementById(id);
+    if(el) el.style.display=isAdmin()?'inline-flex':'none';
+  });
+  // Show/hide user-management section in settings
+  const um=document.getElementById('s-user-mgmt');
+  if(um) um.style.display=isAdmin()?'block':'none';
+  // Lock protected fields for non-admins
+  ['s-ntfy','s-email','s-phone','s-biz','s-notion-email'].forEach(id=>{
+    const el=document.getElementById(id);
+    if(el){ el.disabled=!isAdmin(); el.style.opacity=isAdmin()?'1':'0.5'; el.title=isAdmin()?'':'Only admin can change this'; }
+  });
+  // Show/hide save button for non-admins
+  const savebtn=document.getElementById('s-save-btn');
+  if(savebtn) savebtn.style.display=isAdmin()?'inline-flex':'none';
+}
+
+const CUSTOMERS = [{"name": "Andrew Gorup", "company": "", "email": "andygorup@gmail.com", "phone": ""}, {"name": "Andrew Reimer", "company": "", "email": "northcrawfordfarms@gmail.com", "phone": "2505038402"}, {"name": "Arthur Dylan", "company": "", "email": "olcozeitio36@gmx.com", "phone": "+447911123456"}, {"name": "Avery Joseph", "company": "", "email": "averyjoseph010@gmail.com", "phone": "02015486589"}, {"name": "Bassey Okon", "company": "", "email": "basseyokon459@gmail.com", "phone": "+2348077326175"}, {"name": "Bethany Robinson", "company": "", "email": "robinson.bethanymkt@gmail.com", "phone": "13395557432"}, {"name": "Brittany Hampsch", "company": "", "email": "hubbardbj@gmail.com", "phone": "(618)691-8623"}, {"name": "Bruce Lachney", "company": "", "email": "blachney@peoplepc.com", "phone": "253-405-7525"}, {"name": "Carl Tenney", "company": "", "email": "carltenney@gmail.com", "phone": "13607700606"}, {"name": "Colby Joyce", "company": "", "email": "colby.rackingexpress@gmail.com", "phone": "6144652828"}, {"name": "Curtis Sandhu", "company": "", "email": "sandhucurtis@gmail.com", "phone": ""}, {"name": "daniel howell", "company": "", "email": "dannyssupply@outlook.com", "phone": ""}, {"name": "Daniel Shin", "company": "", "email": "donghuns351@gmail.com", "phone": "+821021791228"}, {"name": "Danielle Graves", "company": "", "email": "gravesappleorchard@gmail.com", "phone": "9202731665"}, {"name": "Dave Lawson", "company": "", "email": "dave_lawson7@outlook.com", "phone": "813-750-7707"}, {"name": "Dongjap Tapgun", "company": "", "email": "dctapgun@gmail.com", "phone": "08064240979"}, {"name": "Frank Howard", "company": "", "email": "fhoward10g@gmail.com", "phone": ""}, {"name": "George Anderson", "company": "", "email": "george.crossengcorp@gmail.com", "phone": "19124957088"}, {"name": "George Hayes", "company": "", "email": "george.hayes2711994@gmail.com", "phone": "09330442191"}, {"name": "Grant Neels", "company": "", "email": "gsnindustriesltd@gmail.com", "phone": "604-819-3448"}, {"name": "Jasen Chambers", "company": "", "email": "jasenchambers@gmail.com", "phone": "323-972-4902"}, {"name": "Jeevan Samra", "company": "", "email": "jeevan_samra@yahoo.ca", "phone": "16047258620"}, {"name": "Joyce Magdales", "company": "", "email": "joycemagdales16@gmail.com", "phone": "09561460243"}, {"name": "Juan Pablo Campos", "company": "", "email": "jpcampos@packman.cl", "phone": ""}, {"name": "Julia Roberts", "company": "", "email": "jullyarobartsmkt@gmail.com", "phone": "4101231234"}, {"name": "Kara Whitley", "company": "", "email": "karawhitleymkt@gmail.com", "phone": "2073325614"}, {"name": "Kyle Nyberg", "company": "", "email": "kylenjdm@gmail.com", "phone": "15098230560"}, {"name": "Liam O'Neill", "company": "", "email": "muscadinefarmsllc@gmail.com", "phone": "8452130097"}, {"name": "Linda George", "company": "", "email": "linda.george29@hotmail.com", "phone": ""}, {"name": "Maria Briones", "company": "", "email": "mrb6242@outlook.com", "phone": "(810)292-1912"}, {"name": "matthew wecker", "company": "", "email": "weckermatthew@gmail.com", "phone": "5197775393"}, {"name": "Michael Thompson", "company": "", "email": "michaelt@wyckoff-farms.com", "phone": "+15097814907"}, {"name": "Mjrowleyfam", "company": "", "email": "mjrowleyfam@gmail.com", "phone": ""}, {"name": "Mohammad Reza Mirian", "company": "", "email": "mrmirian1@gmail.com", "phone": "+989134090852"}, {"name": "Moris Harbert", "company": "", "email": "morisharbert@gmail.com", "phone": "9830152514"}, {"name": "MUKESH Panchal", "company": "", "email": "mangalmurti2000ind@gmail.com", "phone": "09712744629"}, {"name": "Natalia Ramirez", "company": "", "email": "nataliaramirezvela@gmail.com", "phone": "8121052403"}, {"name": "Nathan Wheeler", "company": "", "email": "greenvalleyberryfarm@gmail.com", "phone": "6364399698"}, {"name": "Paul Hill", "company": "", "email": "hill98.paul@gmail.com", "phone": "0335452789"}, {"name": "Peter Song", "company": "", "email": "sales.seahusa@gmail.com", "phone": "+48559425842"}, {"name": "Ray Wright", "company": "", "email": "rayvarietiesstores@gmail.com", "phone": "2464314988"}, {"name": "Rey Gonzales", "company": "", "email": "rmg.ftemi@gmail.com", "phone": "+639281632217"}, {"name": "Richard Dowell", "company": "", "email": "rd3234700@gmail.com", "phone": "7073546330"}, {"name": "Ricky Soly", "company": "", "email": "rsoly3@gmail.com", "phone": "450-758-1629"}, {"name": "Robert Budi", "company": "", "email": "robertbudim@yahoo.com", "phone": ""}, {"name": "Scott Boone", "company": "", "email": "blazyboone@gmail.com", "phone": "14236161504"}, {"name": "Shane Kenny", "company": "", "email": "sjkenny1987@outlook.com", "phone": ""}, {"name": "Steve Thiele", "company": "", "email": "stevethiele@inventurefoods.com", "phone": ""}, {"name": "Thomas Taggart", "company": "", "email": "ttaggart100@gmail.com", "phone": "831-750-7108"}, {"name": "Tim Mainwaring", "company": "", "email": "tjm48@charter.net", "phone": ""}, {"name": "Victor Huang", "company": "", "email": "victorhhuang@gmail.com", "phone": "510 304-1779"}, {"name": "Williams Johnson", "company": "", "email": "devonenery77@yahoo.com", "phone": "18003913897"}, {"name": "Nancy Monzo", "company": "206 Farm Market", "email": "nancy.monzo@yahoo.com", "phone": "(609) 567-0060"}, {"name": "Goga Goga\u00a0Savushkin", "company": "22125454856", "email": "goga@shorr-packaging.com", "phone": "2675910824"}, {"name": "Rick Konwick", "company": "25124081845", "email": "rkonwick@flexautomationsllc.com", "phone": "14145874334"}, {"name": "Kevin Wigington", "company": "25213879328", "email": "kwigington@morris-groupinc.com", "phone": "19197566448"}, {"name": "Pamela Reiser", "company": "27947385753", "email": "pamela.reiser@contracting-squarereport.pro", "phone": "3239170773"}, {"name": "Ellen Jacquelyn", "company": "31784563802", "email": "ellen.jacquelyn@olanplasticsinc.com", "phone": "+16148346626"}, {"name": "Leilanny Valdez", "company": "31799899553", "email": "leilanny.valdez@packlinesusa.com", "phone": "19093828000"}, {"name": "Tim Baldwin", "company": "33074215242", "email": "tim@thouroghtec.com", "phone": "14092310023"}, {"name": "Cory Donoghue", "company": "33240493743", "email": "cdonoghue@oriongroupholdingsinc.net", "phone": "17134695226"}, {"name": "Brent Poulsen", "company": "33935238502", "email": "brent@gabcreativellc.net", "phone": "6415161682"}, {"name": "Michael Christopher", "company": "34947159959", "email": "mike@jerls.com", "phone": "14092310023"}, {"name": "Wu Li", "company": "35766485651", "email": "wuli0013@xinyisolar.online", "phone": "13048027679"}, {"name": "Lucas Marcus", "company": "35891202455", "email": "l.marcus@pointoneprocurement.com", "phone": "14053849102"}, {"name": "Christopher chambers", "company": "36150289076", "email": "christopherchambers@protiocast.com", "phone": "14092310023"}, {"name": "logan loganreed", "company": "36296084877", "email": "loganreed@acemetalspininng.com", "phone": "13605590033"}, {"name": "Jose Cuevas", "company": "37657934367", "email": "jose.cuevas@ditzler.cl", "phone": "+56994349921"}, {"name": "Kimberly Scott", "company": "38146102051", "email": "kimberly@mldweststeelsupply.com", "phone": "14092310023"}, {"name": "Nathan Bailey", "company": "3Rp", "email": "nathan@3rp.us", "phone": "8702243016"}, {"name": "Miguel Ochoa", "company": "A & L Farms, Inc.", "email": "miguel@aandlfarms.com", "phone": "(616) 842-1987"}, {"name": "Colin Hutchinson", "company": "Abbotsford Growers Co-op", "email": "info@abbotsfordgrowers.com", "phone": "604-746-3030"}, {"name": "francisco Paco", "company": "acarep.com", "email": "francisco.paco@acarep.com", "phone": "+51936348658"}, {"name": "Ken Phuah", "company": "Ace Blueberry Company", "email": "ken.phuah@yahoo.com", "phone": "778-881-6729"}, {"name": "Rolf Haugen", "company": "Active Berry Packers", "email": "rolf@nwberrycoop.com", "phone": "360-318-8900"}, {"name": "Bart Adkin", "company": "Adkin Blue Ribbon Packing Co., Inc.", "email": "adkinblue@gmail.com", "phone": "269-637-5740"}, {"name": "Joel Musoni", "company": "African Agri Magazine", "email": "joel.musoni@afriagrimagazine.com", "phone": ""}, {"name": "Luckson Dube", "company": "African Agri Magazine", "email": "luckson.dube@afriagrimagazine.com", "phone": ""}, {"name": "Eric Pond", "company": "Agricare (Farm Management Group)", "email": "ericpond@agricare.com", "phone": "503-550-1677"}, {"name": "Bartlomiej Herodecki", "company": "Agro-hub: Food Exports Worldwide", "email": "hq@agro-hub.online", "phone": "513935069"}, {"name": "Scott Burt", "company": "Ajinomoto Foods", "email": "scott.burt@ajinomotofoods.com", "phone": "19718085831"}, {"name": "Chad Gudjonson", "company": "Alaskan Copper & Brass", "email": "chadg@alaskancopper.com", "phone": "253-796-2768"}, {"name": "Roy Allen", "company": "Allen's Blueberry Freezer", "email": "allensblueberries@gmail.com", "phone": "207-667-5561"}, {"name": "janet meyer", "company": "Allrmolit-Indus", "email": "janet.meyer@allrmolit-indus.com", "phone": "1718455103"}, {"name": "Gary Pangburn", "company": "Alma Pak, Inc.", "email": "", "phone": "(912) 632-4340"}, {"name": "Philip Skogmo", "company": "alstoneequipment.com", "email": "p.skogmo@alstoneequipment.com", "phone": "16466641131"}, {"name": "Rparker", "company": "Ammeraal Beltech SA", "email": "rparker@ammeralbeltech.com", "phone": ""}, {"name": "John Herrera", "company": "Anacapa Foods", "email": "", "phone": "805-488-5331"}, {"name": "Doc J. Anderson", "company": "Anderson Blueberry Farms", "email": "", "phone": "(269) 764-1447"}, {"name": "Dave Murray", "company": "Andrew Williamson Fresh Produce", "email": "", "phone": "619-661-6004"}, {"name": "Danny K", "company": "aneesho.com", "email": "pat@aneesho.com", "phone": "18102440753"}, {"name": "Perry Chen", "company": "ANG Drive", "email": "export1@angdrive.com", "phone": "8615757195590"}, {"name": "Rob Hansen", "company": "Annie's II, LLC", "email": "", "phone": "(360) 263-2289"}, {"name": "Raul Mozo", "company": "Ariztia", "email": "rmozo@ariztia.com", "phone": "(56 2) 2637 80 06"}, {"name": "Danni Horton", "company": "Ark Foods", "email": "danni@arkfoods.com", "phone": ""}, {"name": "Derek Hayes", "company": "Arvoli", "email": "derek@arvoli.com", "phone": "4698291940"}, {"name": "Allison Rayner", "company": "Ask-Nestle", "email": "contact@ask-nestle.com", "phone": ""}, {"name": "Daniel", "company": "Athiana Acres", "email": "daniel@athianaacres.com", "phone": ""}, {"name": "Art Galletta", "company": "Atlantic Blueberry Co., Inc.", "email": "art@atlanticblueberry.com", "phone": "(609) 561-8600"}, {"name": "Aaron Hand", "company": "Atomo Coffee", "email": "aaron@atomocoffee.com", "phone": "+1831-224-3074"}, {"name": "Crystal DeWeese", "company": "B4 Logistics", "email": "crystal@b4logistics.com", "phone": "3608183250"}, {"name": "Mathew Blauvelt", "company": "bake-mark.com", "email": "mblauvelt@bake-mark.com", "phone": "9179983007"}, {"name": "Mike Herauf", "company": "batterymetals.com", "email": "mherauf@batterymetals.com", "phone": "9252606297"}, {"name": "Dane", "company": "Bay Baby Produce", "email": "dane@baybabyproduce.com", "phone": ""}, {"name": "Jesus Alberto Rodriguez Gallegos", "company": "becker-robotic.mx", "email": "a.rodriguez@becker-robotic.mx", "phone": "7708370800"}, {"name": "Rusty Bell", "company": "Bell Farms, Inc.", "email": "", "phone": "(912) 647-2807"}, {"name": "Nathan Lowe", "company": "bellinghamabode.com", "email": "nathan@bellinghamabode.com", "phone": "360-201-4294"}, {"name": "Taylor Bean", "company": "Berberian Nut Company", "email": "tbean@bncnut.com", "phone": "(530)720-6599"}, {"name": "Arnoldo Rivera", "company": "BERRIES-CHILE", "email": "arivera@berries-chile.com", "phone": "+56993285765"}, {"name": "Jesus Vidrio", "company": "Berry Fresh", "email": "jesus.vidrio@berryfresh.com", "phone": ""}, {"name": "Tom Philips", "company": "Berryhill Foods, Inc.", "email": "tom@berryhillfoods.om", "phone": "640-850-1988"}, {"name": "Ken Bess", "company": "Bess Fruit Farm", "email": "", "phone": "(269) 621-3575"}, {"name": "Nick Sharma", "company": "Best Bay Logistics", "email": "sharma.nick@bestbaylogistics.com", "phone": "19096167947"}, {"name": "Jacob Ellis", "company": "Beta Hatch", "email": "jacob@betahatch.com", "phone": ""}, {"name": "Virginia Emery", "company": "Beta Hatch", "email": "virginia@betahatch.com", "phone": ""}, {"name": "Doyle Harroun", "company": "Blue Acres", "email": "", "phone": "(503) 852-6221"}, {"name": "John Smith", "company": "Blue Gold Blueberry Farm, LLC", "email": "", "phone": "(209) 253-1019"}, {"name": "Ron Lewis", "company": "Blue Raeven Farms, Inc.", "email": "ron@blueraeven.com", "phone": "503-835-4104"}, {"name": "Brek Burgweger", "company": "Blue River Legacy Farms", "email": "bburgweger@tiverton.ag", "phone": "252-542-0231"}, {"name": "Joseph Williams", "company": "Blue River Legacy Farms", "email": "jwilliams@blueriver.farm", "phone": ""}, {"name": "sam pennington", "company": "Blue River Legacy Farms", "email": "pennington@blueriver.farm", "phone": ""}, {"name": "Tonya Forster", "company": "Blue River Legacy Farms", "email": "tforster@blueriver.farm", "phone": ""}, {"name": "Tony Marr", "company": "Blue Star Farms, Inc.", "email": "tonymarr@bluestarfarmsinc.com", "phone": "269-857-4278"}, {"name": "Ron Lawrence", "company": "Blueberry Bay Farm", "email": "info@blueberrybayfarm.com", "phone": "603-580-1612"}, {"name": "Bill Mortellite", "company": "Blueberry Bill Farms, Inc.", "email": "", "phone": "(609) 561-6665"}, {"name": "John Nelson", "company": "Blueberry Ranch", "email": "john@blueberryranch.com", "phone": "(574) 255-5773"}, {"name": "Roland Hokanson", "company": "Blueberry Ridge", "email": "", "phone": "(601) 798-0477"}, {"name": "Al Gutierrez", "company": "BODYCOTE PLC", "email": "alberto.gutierrez@bodycote.com", "phone": "442-235-2726"}, {"name": "Jim Peterson", "company": "bonarplastics.com", "email": "jpeterson@bonarplastics.com", "phone": "402-465-6410"}, {"name": "Becky Hotovy", "company": "Borden Processing", "email": "b.hotovy@yahoo.com", "phone": "(269) 764-0514"}, {"name": "James Hood", "company": "BossHog Freight Solutions", "email": "james@bosshog.us", "phone": "4792683257"}, {"name": "Carol Bowerman", "company": "Bowerman Blueberries, LTD.", "email": "", "phone": "(616) 399-0567"}, {"name": "Juana Chavez", "company": "Brady Farms, Inc.", "email": "michaelwabeke@tds.net", "phone": "(616) 842-3916"}, {"name": "Bryan Chambers", "company": "Brasswood Estate", "email": "bryan@wecotek.com", "phone": ""}, {"name": "Marcus Marquez", "company": "Brasswood Estate", "email": "marcus@brasswood.com", "phone": ""}, {"name": "Huri Mucahit", "company": "Bristol-Myers Squibb Company", "email": "huri.mucahit@bms.com", "phone": ""}, {"name": "Pete Jones", "company": "Bristol-Myers Squibb Company", "email": "peter.jones@bms.com", "phone": "13607089928"}, {"name": "Mike Arnold", "company": "Bulldog Innovative Manufacturing", "email": "marnold@bdim-usa.com", "phone": "5177153202"}, {"name": "Bobby Bishop", "company": "Bureau Veritas North America", "email": "bobbybishop@bvnausa.com", "phone": "6162660961"}, {"name": "Matthew Sherman", "company": "Burnette Foods, Inc.", "email": "msherman@burnettefoods.com", "phone": "269-621-3181 x 111"}, {"name": "Benjamin Hernandez", "company": "Bush-N-Vine Farm", "email": "benjamin@bushnvinefarm.com", "phone": ""}, {"name": "Bob Hall", "company": "Bush-N-Vine Farm", "email": "bob@bushnvinefarm.com", "phone": "(541) 567-4781"}, {"name": "Sam Hall", "company": "Bush-N-Vine Farm", "email": "samuel@bushnvinefarm.com", "phone": ""}, {"name": "Bruno Edwards", "company": "byrnemetal.com", "email": "bruno@byrnemetal.com", "phone": "15736177297"}, {"name": "Robert Schreckenstein", "company": "c-sgroup.us.com", "email": "rschreckenstein@c-sgroup.us.com", "phone": "19089800057"}, {"name": "George Vano", "company": "Cal Splendor", "email": "", "phone": "619-671-9090"}, {"name": "Mary McDonnell", "company": "California Apple Commission", "email": "mmcdonnell@calapple.org", "phone": "5598941094"}, {"name": "Evan Pence", "company": "California Giant Berry Farms", "email": "", "phone": "503-886-8911"}, {"name": "Leslie Slack", "company": "California Giant Berry Farms", "email": "bslack@calgiant.com", "phone": ""}, {"name": "Victoria Walker", "company": "Callaway Golf", "email": "vicky.walker@callawaygolf.com", "phone": "14133563532"}, {"name": "Phil Olson", "company": "Calyx Fruit, LLC", "email": "phil@blueberries.us", "phone": "(503) 835-0504"}, {"name": "Crystal DeWeese", "company": "Camas Transport", "email": "crystal@camastrans.com", "phone": "18005242425"}, {"name": "Plant Manager", "company": "Camposol USA", "email": "mgaldamez@camposol.us", "phone": "954 317-0528"}, {"name": "Jose Antonio Gomez Banzan", "company": "camposol.us", "email": "jgomez@camposol.us", "phone": "954-317-0528"}, {"name": "Karen Solis", "company": "Canopy Mortgage", "email": "ksolis@canopymortgage.com", "phone": ""}, {"name": "Doug Cross", "company": "Canter-Berry Farms", "email": "", "phone": "(253) 939-2706"}, {"name": "Phillip Dunaway", "company": "Cardinal Foods", "email": "pdunaway@cardinalfoodsllc.com", "phone": "+19102599407"}, {"name": "Bob Carini", "company": "Carini Farms", "email": "bob@carinifarms.com", "phone": "616-399-2052"}, {"name": "Matt Bockover", "company": "Carolina Berry Group", "email": "info@carolinaberrygroup.com", "phone": "+19105884220"}, {"name": "Rod Bangert", "company": "Carolina Blueberry       Coop.  Assoc.", "email": "rbangert@carolinablueberry.com", "phone": "910-588-4220"}, {"name": "ALEX Winstead", "company": "Cascadia Mushrooms", "email": "alex@cascadiamushrooms.com", "phone": "3603056793"}, {"name": "Paul Griebenow", "company": "CDI Custom Design, Inc", "email": "paulg@cdicustomdesign.com", "phone": "3603109983"}, {"name": "Max Becker", "company": "Cherry Central Cooperative, Inc", "email": "mbecker@cherrycentral.com", "phone": "(231)946-1860"}, {"name": "Schaffer Wall", "company": "Cherry Central Cooperative, Inc", "email": "swall@cherrycentral.com", "phone": "+12319296626"}, {"name": "Laurie Brown", "company": "Cherryfield Foods Inc", "email": "", "phone": "207-546-7573x2111"}, {"name": "Samantha Davis", "company": "chief-exhibitus", "email": "samantha.davis@chief-exhibitus.com", "phone": "2015689658"}, {"name": "Gina Freeman", "company": "Chuckanut Bay Foods", "email": "ginaf@chuckanutbay.com", "phone": "+13603809108 ext 5"}, {"name": "Tonyb", "company": "Chuckanut Bay Foods", "email": "tonyb@chuckanutbay.com", "phone": ""}, {"name": "Sam Blackstone", "company": "Circle B Farms", "email": "", "phone": "(207) 498-8238"}, {"name": "Virginia Quon", "company": "City of Surrey", "email": "virginia.quon@surrey.ca", "phone": ""}, {"name": "Carol Allison", "company": "Cleaarian Berry Farm", "email": "", "phone": "(360) 592-5106"}, {"name": "James zhurong", "company": "cnbiote.com", "email": "sales1@cnbiote.com", "phone": "+8657487500231"}, {"name": "Brad Wervdzel", "company": "Coloma Frozen Foods, Inc.", "email": "cffi@colomafrozen.com", "phone": "(269) 849-0500"}, {"name": "Kellye Martinelli", "company": "Columbia Blueberry Farm Inc", "email": "", "phone": "(609)561-9222"}, {"name": "Loren", "company": "Columbia Empire Farms", "email": "", "phone": "503-538-2156"}, {"name": "Brian Maupin", "company": "Columbia Fruit, LLC", "email": "partscontroller@columbia-fruit.com", "phone": ""}, {"name": "Marty Peterson", "company": "Columbia Fruit, LLC", "email": "info@columbia-fruit.com", "phone": "(360) 225-9575"}, {"name": "Pablo Havia", "company": "Comfrut S.A.", "email": "", "phone": "562 2 334 6088"}, {"name": "Chelsea Consalo", "company": "Consalo Family Farms", "email": "chelsea@consalofamilyfarms.com", "phone": ""}, {"name": "Angela Chappell", "company": "Coosaw Farms", "email": "angela@coosawfarms.com", "phone": "803-632-2021"}, {"name": "Alex Cornelius", "company": "Corneliusfarms", "email": "nathan@corneliusfarms.com", "phone": "(912) 284-0266"}, {"name": "Alex Cornelius", "company": "Corneliusfarms", "email": "raynette@corneliusfarms.com", "phone": ""}, {"name": "Cathy Cornelius", "company": "Corneliusfarms", "email": "cathy@corneliusfarms.com", "phone": ""}, {"name": "Heather Simmons", "company": "Corneliusfarms", "email": "heathersimmons13@gmail.com", "phone": ""}, {"name": "Jon Simmons", "company": "Corneliusfarms", "email": "jon@corneliusfarms.com", "phone": ""}, {"name": "Megan Oliver", "company": "Corneliusfarms", "email": "megan@corneliusfarms.com", "phone": ""}, {"name": "Mitchell Smith", "company": "Corneliusfarms", "email": "msmith@corneliusfarms.com", "phone": ""}, {"name": "Raynette Smith", "company": "Corneliusfarms", "email": "mandrsmith@bellsouth.net", "phone": ""}, {"name": "Larry", "company": "Cornerstone Ag Enterprises LLC", "email": "office@cornerstoneag-llc.com", "phone": "269-637-2899"}, {"name": "Tom Bodtke", "company": "Cornerstone Ag Enterprises LLC", "email": "tbodtke@cornerstoneag-llc.com", "phone": ""}, {"name": "Virginia Cooper", "company": "Corporate Blue by Shark Themes", "email": "info@learnaliving.co", "phone": "6143333411"}, {"name": "Ron Cottle", "company": "Cottle Strawberry Nursery", "email": "ron@cottlefarms.com", "phone": "(910)267-0009"}, {"name": "Whit Jones", "company": "Cottle Strawberry Nursery", "email": "whitjones@embarqmail.com", "phone": ""}, {"name": "Stacey Donio", "company": "Country Boy Farms", "email": "", "phone": "(609) 567-4233"}, {"name": "Derek Dee", "company": "crosslinkmarketing", "email": "derek@crosslinkmarketing.com", "phone": "5154271358"}, {"name": "Loganr", "company": "Crunch Pak", "email": "loganb@crunchpak.com", "phone": ""}, {"name": "Mike Klackle", "company": "Curry & Company", "email": "", "phone": "(503) 393-6033"}, {"name": "Monte Maberry", "company": "Curt Maberry Farm, Inc.", "email": "monte@curtmaberryfarm.com", "phone": "(360) 354-7708"}, {"name": "Kevin Lee", "company": "Cyber Bearings", "email": "kevin@cyberbearings.com", "phone": "5622728032"}, {"name": "Donna Miller", "company": "D & J Blueberry Farms, LLC", "email": "blueberriesrn@gmail.com", "phone": ""}, {"name": "Dave Thomas", "company": "D & M Blueberries, Inc.", "email": "", "phone": "(269)427-7424"}, {"name": "Chuck Dailey", "company": "Dailey Packaging", "email": "", "phone": "(269) 637-3638"}, {"name": "Benjamin Freeman", "company": "Damaz Solution", "email": "sales@damazsolution.com", "phone": "12622646700"}, {"name": "Jocelyn Mathew", "company": "Datas Provider", "email": "jocelyn@datasprovider.com", "phone": "19099394090"}, {"name": "Lana Davis", "company": "Davis Farms Inc", "email": "", "phone": "(503) 637-5105"}, {"name": "Dalton Simpson", "company": "Diamond Manufacturing", "email": "dalton.simpson@diamondman.com", "phone": "5709549126"}, {"name": "Anthony DiMeo III", "company": "DiMeo Blueberry Farms & Nursery", "email": "dimeofarms@gmail.com", "phone": "(609) 561-5905"}, {"name": "MICHAEL HARMS", "company": "Direct Drive Logistics", "email": "mike.h@shipddl.com", "phone": "4143296418"}, {"name": "Mike Zobel", "company": "Diversified Food (Meduri Export)", "email": "mzobel@diversifiedfood.com", "phone": ""}, {"name": "Steven Vann", "company": "Dole", "email": "steven.vann@doleintl.com", "phone": "(209) 358-5643 ext 6012"}, {"name": "Erica Calderon", "company": "Domainshop.com", "email": "noreply52418@noreply.com", "phone": ""}, {"name": "Don Smith", "company": "Don's Smith's Tree Farm", "email": "", "phone": "(503) 631-2915"}, {"name": "Bob Faulkner", "company": "Double  D Farms", "email": "rbuchanan@doubledfarms.com", "phone": "(559)749-0545"}, {"name": "Kasey Kohler", "company": "Dp-West", "email": "kasey@dp-west.com", "phone": "360.825.7660"}, {"name": "Jason Dockter", "company": "Draper Valley Farms", "email": "dockter@dvfmv.com", "phone": "360-424-7947"}, {"name": "Jordan Yancy", "company": "Driscoll Strawberry Associates", "email": "jordan.yancy@driscolls.com", "phone": ""}, {"name": "Marianna Solorio", "company": "Driscoll Strawberry Associates", "email": "marianna.solorio@driscolls.com", "phone": ""}, {"name": "Mark Greeff", "company": "Driscoll Strawberry Associates", "email": "mark.greeff@driscolls.com", "phone": "(831) 763-5000"}, {"name": "Matthew Curran", "company": "Driscoll Strawberry Associates", "email": "matthew.curran@driscolls.com", "phone": ""}, {"name": "Phillip Corbiere", "company": "Driscoll Strawberry Associates", "email": "phillip.corbiere@driscolls.com", "phone": ""}, {"name": "Richard Fiorelli", "company": "Driscoll Strawberry Associates", "email": "richard.fiorelli@driscolls.com", "phone": ""}, {"name": "Rickie Holness", "company": "Driscoll Strawberry Associates", "email": "rickie.holness@driscolls.com", "phone": ""}, {"name": "Samantha Williamson", "company": "Driscoll Strawberry Associates", "email": "samantha.williamson@driscolls.com", "phone": ""}, {"name": "STELLA SUDDARTH", "company": "Driscoll Strawberry Associates", "email": "stella.suddarth@driscolls.com", "phone": ""}, {"name": "Adetola Sogbesan", "company": "Dula", "email": "adetola@dula.com.ng", "phone": "23407057012323"}, {"name": "Dick Sadler", "company": "Dundee Fruit", "email": "", "phone": "503-537-2500"}, {"name": "Mike Kachmer", "company": "Duravant", "email": "mike.kachmer@duravant.com", "phone": "630-635-3912"}, {"name": "Chuck Ebersole", "company": "Ebersole Enterprises, Inc.", "email": "", "phone": "(407) 886-1741"}, {"name": "Dave Dodson", "company": "edaleendairy", "email": "daved@edaleendairy.com", "phone": "13603545342"}, {"name": "Brian Gonzalez", "company": "Empire Bio Diagnostics", "email": "bgonzalez@ebdny.com", "phone": "15165473874"}, {"name": "Andy Enfield", "company": "Enfield Farms, Inc.", "email": "aenfield@enfieldfarms.com", "phone": "(360) 354-3019"}, {"name": "Arthur Cathcart", "company": "Enfield Farms, Inc.", "email": "arthur.cathcart@enfieldfarms.com", "phone": "360-399-3229"}, {"name": "Jeff & Lori Scholten", "company": "Enfield Farms, Inc.", "email": "jscholten@enfieldfarms.com", "phone": "360-815-3004"}, {"name": "Josh Hurst", "company": "Enfield Farms, Inc.", "email": "josh.hurst@enfields.com", "phone": ""}, {"name": "Marlane Terpstra", "company": "Enfield Farms, Inc.", "email": "marlane.terpstra@enfieldfarms.com", "phone": "360-988-2900"}, {"name": "Amanda Sproul", "company": "equinoxengineeringltd.com", "email": "asproul@equinoxengineeringltd.com", "phone": "17269990352"}, {"name": "Sklinedinst", "company": "Erin Baker's Wholesome Baked Goods", "email": "sklinedinst@erinbakers.com", "phone": ""}, {"name": "Vanessa Dichari", "company": "Ernest Packaging Solutions", "email": "vdichari@ernestpkg.com", "phone": "503-261-4066"}, {"name": "Elena Campbell", "company": "Eventuell Database", "email": "elena.campbell@eventuelldatabase.com", "phone": "12892291005"}, {"name": "Richard Collins", "company": "Eventuell Database", "email": "richard@eventuelldatabase.com", "phone": "2096248506"}, {"name": "Lloyd Tino", "company": "eventuelldatabase.net", "email": "lloydtino@eventuelldatabase.net", "phone": "12892291002"}, {"name": "Lavonne Bristol", "company": "F.B.Blueberries", "email": "", "phone": "(810) 724-0134"}, {"name": "Bill Steed", "company": "Fairfield Farms LLC", "email": "bill@fairfieldllc.com", "phone": "760-742-1792"}, {"name": "Matt young", "company": "Family  Tree Farms", "email": "", "phone": "559-591-6280"}, {"name": "Justin Bodily", "company": "FANUC America", "email": "justin.bodily@fanucamerica.com", "phone": "801-808-4017"}, {"name": "Jerry Brothers", "company": "Far Reach Ranch", "email": "farreachranch2005@embarqmail.com", "phone": "(352) 343-7389"}, {"name": "Tim Cayton", "company": "Fariji Farm", "email": "tcayton@gmail.com", "phone": "(503)873-8403"}, {"name": "Rocky Caldero", "company": "Fat-Cat Fish LLC", "email": "rocky@fatcatfish.com", "phone": "(360) 715-1994"}, {"name": "fatou diop", "company": "Fdmbamba", "email": "dispatch@fdmbamba.com", "phone": "7045625462"}, {"name": "Mike", "company": "Fig Garden Packing, Inc.", "email": "mike@figgardenpacking.com", "phone": "559-271-1332"}, {"name": "Dave Williams", "company": "Firestone Packing Company", "email": "dave@firestonepacificfoods.com", "phone": "(360) 695-9484x11"}, {"name": "Marilyn Kirsch", "company": "Fitchett's Blueberries", "email": "mlkirsch@gmail.com", "phone": "(541) 928-8583"}, {"name": "Sara Jones", "company": "flatworldsolutions.in", "email": "sara.j@flatworldsolutions.in", "phone": "16096046959"}, {"name": "Nlyon", "company": "Flexahopper Plastics", "email": "nlyon@flexahopper.com", "phone": ""}, {"name": "Cameron Black", "company": "Flextank", "email": "cblack@flextank.com", "phone": "360-334-3418"}, {"name": "Eduardo Camerati", "company": "Flextank", "email": "e.camerati@alchemysta.com", "phone": "76.466.324-1"}, {"name": "John Smeaton", "company": "Flextank", "email": "john@smeaton.estate", "phone": "041-088-9550"}, {"name": "Michael Rigby", "company": "Flextank", "email": "mrigby@flextank.com", "phone": "+13608820410"}, {"name": "Tamas Joo", "company": "Flextank", "email": "tjoo@kerttrade.hu", "phone": ""}, {"name": "John Collins", "company": "Franklin Processing, Inc.", "email": "", "phone": "207-565-5021"}, {"name": "Jesse", "company": "Fraser Valley Packers", "email": "jesse@fraservalleypackers.com", "phone": ""}, {"name": "Joe Gill", "company": "Fraser Valley Packers", "email": "joegill@fraservalleypackers.com", "phone": "604-852-3525"}, {"name": "Steve Manassah", "company": "Freeze-Dry Ingredeints, Inc.", "email": "steve.manassah@fdiusa.net", "phone": "708-544-1880"}, {"name": "Brian Hunter", "company": "Fresh Frozen Foods", "email": "brian.hunter@freshfrozenfoods.com", "phone": ""}, {"name": "Dave Hofford (Frieslsa)", "company": "Friesla", "email": "dave@friesla.com", "phone": "+13603039043"}, {"name": "Kristin Fritz", "company": "Fritz U- Pick", "email": "", "phone": "(269) 521-7655"}, {"name": "Jaime Estrade", "company": "Fruit Fillings Inc.", "email": "jaime@fruitfillings.com", "phone": "559-288-1958"}, {"name": "Jim Early", "company": "Fruitsmart, Inc.", "email": "", "phone": "509-786-3500"}, {"name": "Kermit Allan", "company": "G.M. Allen & Son", "email": "", "phone": "207-469-7060"}, {"name": "Karlis Galens", "company": "Galens Blueberries", "email": "kj3galens@yahoo.com", "phone": "(269) 621-3085"}, {"name": "Gary Hongel", "company": "Gary's Place", "email": "garyhongel9@msn.com", "phone": "360-254-6126"}, {"name": "Umrulla Jabborov", "company": "generalsolution.uz", "email": "u.jabborov@generalsolution.uz", "phone": "+998978087877"}, {"name": "viktor johansen", "company": "geosyntecusa.com", "email": "viktorjohansen@geosyntecusa.com", "phone": ""}, {"name": "Verne Gingerich", "company": "Gingerich Farms Products, Inc.", "email": "admin@gingerich.com", "phone": "(503) 651-3742"}, {"name": "Lisa Nicely", "company": "Global Food Safety Consultants", "email": "solutions@globalfoodsafetyconsultants.com", "phone": ""}, {"name": "Dula Badesha", "company": "Golden Eagle farm group", "email": "dula.badesha@gefarmgroup.com", "phone": ""}, {"name": "Darrin Ditchen", "company": "Golden Valley East, LLC", "email": "darrin@eotnet.net", "phone": "(541) 567-2173"}, {"name": "Liam Morris", "company": "Goodman Fielder", "email": "liam.morris@goodmanfielder.com.au", "phone": ""}, {"name": "Dan Arkema", "company": "Graceland Fruit Cooperative Inc.", "email": "", "phone": "231-352-7181"}, {"name": "Jeremy Edwards", "company": "Great Southern Farms", "email": "jerms@whatevs.com", "phone": "(601) 788-1990"}, {"name": "alan stender", "company": "Green Rubber-Kennedy", "email": "astender@greenrubber.com", "phone": "2098400624"}, {"name": "Hailey Jones", "company": "Greenmarketing-Us", "email": "hailey.j@greenmarketing-us.com", "phone": "02018596589"}, {"name": "Orion Cavins", "company": "H.B. Fuller Company", "email": "orion.cavins@hbfuller.com", "phone": ""}, {"name": "Jake Kropf", "company": "Hale-N-Hearty", "email": "jjfarm3@gmail.com", "phone": "541-409-4600"}, {"name": "Ryan Egger", "company": "Hammer Haag Steel", "email": "regger@hammerhaag.com", "phone": "17272166903"}, {"name": "cathy wang", "company": "Hangzhou Merry Sino Technology Co.", "email": "sales88@rotarypacking.com", "phone": "+8613750864594"}, {"name": "Remi Vieux Pernon", "company": "hanslaser.com", "email": "remivp@hanslaser.com", "phone": "15618238340"}, {"name": "Kevin Wong", "company": "Hardbite", "email": "kevinw@hardbitechips.com", "phone": "6046132565"}, {"name": "Gerard Krewer", "company": "Harrletts Bluff Farm", "email": "", "phone": "229-392-1388"}, {"name": "Roy Dickerson", "company": "Hill Country Foodworks", "email": "dickersonroy@aol.com", "phone": "9564102270"}, {"name": "Plant Manager", "company": "Hilltop Produce Farms", "email": "", "phone": "503-667-5136"}, {"name": "Cammy Hinton", "company": "Hinton Farms Produce, Inc.", "email": "", "phone": "(813) 659-2160(813)"}, {"name": "Paul Escoe", "company": "Hood River Blueberry", "email": "paul@hoodriverblueberry.com", "phone": ""}, {"name": "Bmueller", "company": "Hopsteiner", "email": "bmueller@hopsteiner.com", "phone": ""}, {"name": "Victor Moller", "company": "Hortifrut", "email": "chile@hortifrut.com", "phone": ""}, {"name": "Mark Hurst", "company": "Hurst's Berry Farm/HBF international", "email": "mdhurst@hursts-berry.com", "phone": "(503) 843-3185"}, {"name": "Thomas Beadle", "company": "Imperial Frozen Foods", "email": "", "phone": "919-900-8130x103"}, {"name": "Jonathan Tyer", "company": "Inglenook Winery", "email": "jonathan.tyer@inglenook.com", "phone": ""}, {"name": "Ahmed Khair", "company": "INNOVAFOOD", "email": "ahmed.khair@innova-food.net", "phone": ""}, {"name": "Jack Tufford", "company": "innovativesolutionsinc.com", "email": "jack@innovativesolutionsinc.com", "phone": "2532563172"}, {"name": "Gustavo Barbier", "company": "Inter-Chile S.A.", "email": "gustavobarbier@inter-chile.com", "phone": ""}, {"name": "Hugo Ramos", "company": "IPL Macro", "email": "", "phone": "800-845-6555"}, {"name": "Ken Patterson", "company": "Island Grove Ag Products", "email": "kpatterson@islandgroveagproducts.com", "phone": "(352)481-5558"}, {"name": "Don Vandewerken", "company": "J & D Blueberry Farm", "email": "donvdw1@gmail.com", "phone": "504-782-0779"}, {"name": "Lamar Jordan, Sr", "company": "J & J Blueberries", "email": "jjblueberries@gmail.com", "phone": "912-520-1298"}, {"name": "Ann Davis", "company": "Jasper Wyman & Son", "email": "", "phone": "207-546-2311"}, {"name": "Dawn Yelton", "company": "Jay's Blueberries", "email": "", "phone": "(503) 631-3345"}, {"name": "Phil Neary", "company": "Jersey Fruit Cooperative Assn., Inc.", "email": "sales@jerseyfruit.com", "phone": "(856) 863-9100"}, {"name": "Jason Kessinger", "company": "JIT Manufacturing", "email": "jasonk@jit-mfg.com", "phone": "14254920001"}, {"name": "Joey Lawson", "company": "Joey Lawson", "email": "", "phone": "(813) 754-9844"}, {"name": "John Curry", "company": "John & Cora's Blueberry Patch", "email": "jccurry@earthlink.net", "phone": "(727)869-9308"}, {"name": "James Johnson", "company": "Johnson Berry Farm", "email": "james@johnsonberryfarm.com", "phone": "(360) 493-2350"}, {"name": "Joe Johnson", "company": "Johnson Blueberry Farm", "email": "johnsonblueberries@yahoo.com", "phone": "(601)626-8166"}, {"name": "Joe Jones", "company": "Jones Berry Farm", "email": "jones@jonesberryfarm.com", "phone": "(269) 465-4745"}, {"name": "Joe Berenato", "company": "Joseph A. Berenato Farms", "email": "", "phone": "(609) 561-5435"}, {"name": "Jonathon Reed", "company": "Jr's Berry Farms", "email": "", "phone": "(912) 282-0201"}, {"name": "Joseph L. Lucca", "company": "JRL Inc.", "email": "josephlucca@comcast.net", "phone": "(609) 561-1572"}, {"name": "San Juana Chavez", "company": "Juana's Packing Company,LLC", "email": "juana@tds.net", "phone": "(616) 842-3916"}, {"name": "Lina Lina", "company": "jxprecisionparts.com", "email": "qxh@jxprecisionparts.com", "phone": "8621605421"}, {"name": "Helen Chen", "company": "jy-machiningparts.com", "email": "helen@jy-machiningparts.com", "phone": "7692338141"}, {"name": "Ken Kanooth", "company": "Kannoth's Berries & Nursery", "email": "", "phone": "(360) 921-3571"}, {"name": "Kaye Bovey", "company": "Kaye's Blueberries", "email": "", "phone": "(360) 687-4630"}, {"name": "Ken Ryan", "company": "Keltech Stainless Steel Motors and Gears", "email": "kenr@keltechltd.com", "phone": "905 634-8004"}, {"name": "Trevor Albee", "company": "Kerr Concentrates", "email": "trevor.albee@kerrconcentrates.com", "phone": "503-378-0493"}, {"name": "Ally Mullally", "company": "King & Prince", "email": "amullally@kpseafood.com", "phone": "2065077609"}, {"name": "Micah Norris", "company": "king-rom.com", "email": "micah.norris@king-rom.com", "phone": "6144488631"}, {"name": "Tim Watts", "company": "kleinfeldergroupinc.com", "email": "tim.watts@kleinfeldergroupinc.com", "phone": "8138093400"}, {"name": "Soumi Bandopadhyay", "company": "Kraft Heinz", "email": "soumi.bandopadhyay@kraftheinz.com", "phone": "7329835559"}, {"name": "Marilyn Krieger", "company": "Krieger's Whoesale Nursery, Inc.", "email": "lmknsy@aol.com", "phone": "269-465-5522"}, {"name": "Lyle Kuenzi", "company": "Kuenzi Brothers Farm, LLC", "email": "drea_001@msn.com", "phone": "(503) 873-9488"}, {"name": "Mark Lagoner", "company": "Lagoner Farms", "email": "mlagoner@rochester.rr.com", "phone": "(315) 589-9534"}, {"name": "Jared Hartman", "company": "Landbouw Ranches", "email": "jaredlandbouwranches@gmail.com", "phone": "5593534650"}, {"name": "Richard Lanza", "company": "Lanza's Blueberry Hill", "email": "riclanza@comcast.net", "phone": "(609) 567-3028"}, {"name": "Catherine Gagnon", "company": "Laporte Consultants", "email": "cgagnon@laporteconsultants.com", "phone": ""}, {"name": "Brent Royal", "company": "Lawrence Foods, Inc.", "email": "", "phone": "847-437-2400"}, {"name": "Joe Leduc", "company": "Leduc Blueberries, LLC", "email": "info@leducblueberries.com", "phone": "(269)657-3871"}, {"name": "Victoria Locke", "company": "Locke's Fruitful Acres", "email": "", "phone": "(269) 423-6536"}, {"name": "Cheryl", "company": "LoSasso Farms", "email": "", "phone": "(609)567-3527"}, {"name": "Jerry Leclerc", "company": "lovedaymushrooms.com", "email": "jleclerc@lovedaymushrooms.com", "phone": "2047922228"}, {"name": "Daniel Lovett", "company": "Lovett Family Farms", "email": "daniel@lffl.co.nz", "phone": "+64272792076"}, {"name": "Darrell Palmer", "company": "lsmbweston.com", "email": "darrell.plmer@lsmbweston.com", "phone": ""}, {"name": "Jarred Positano", "company": "Lyne Systems", "email": "jarred.positano@lynesystems.com", "phone": ""}, {"name": "Mike Gardiner", "company": "Lyne Systems", "email": "mike.gardiner@lynesystems.com", "phone": ""}, {"name": "Betty Lyrene", "company": "Lyrene's Blueberries", "email": "", "phone": "(251) 928-0925"}, {"name": "Kelly Byrne-Haertjens", "company": "M & B SUPPLY", "email": "kellyjbh@m-bsupply.com", "phone": "13099443206"}, {"name": "Paul Macrie III", "company": "Macrie Bros. Blueberry Farm", "email": "macriebros@aim.com", "phone": "(609) 561-6822"}, {"name": "Glenn Deal", "company": "Majestic Farms Blueberries", "email": "gwdeal@hotmail.com", "phone": "(360) 883-1388"}, {"name": "Mike Wagner", "company": "MartinBauer", "email": "mike.wagner@martin-bauer.com", "phone": "19736266250"}, {"name": "Michael Lee", "company": "marvtech.cn", "email": "michael.lee@marvtech.cn", "phone": "+8613682141833"}, {"name": "Charles Steward", "company": "Massimo Zanetti Beverage USA", "email": "csteward@mzb-usa.com", "phone": "3143560345"}, {"name": "Nate Anselmi", "company": "masterfabnw.com", "email": "nate@masterfabnw.com", "phone": "4255033356"}, {"name": "Lorrie Merker", "company": "MBG Marketing", "email": "blueberrysuppliers@blueberry.com", "phone": "(269) 434-6791"}, {"name": "Cathy McCool", "company": "McCool Blue Farm, Inc.", "email": "", "phone": "(727) 869-8219"}, {"name": "Bgirard Girard", "company": "McGuire", "email": "bgirard@mcguirebearing.com", "phone": "(206) 767-3283"}, {"name": "Bob Green", "company": "MDI", "email": "", "phone": "218-313-1705"}, {"name": "Mark Corbett", "company": "MDI", "email": "sales@mdi.org", "phone": "651-999-8213"}, {"name": "Steve Aujla", "company": "Meadow Berry Farms", "email": "stevve@meadowberryfarms.com", "phone": "604-460-9401"}, {"name": "Jonathan Zhang", "company": "Mech-Mind Robotics", "email": "jonathan.zhang@mech-mind.net", "phone": ""}, {"name": "Joe Meduri", "company": "Meduri Farms, Inc.", "email": "joe@medurifarms.com", "phone": "(503) 623-0308"}, {"name": "Justin Meduri", "company": "Meduri Farms, Inc.", "email": "justin@medurifarms.com", "phone": "+15036230726"}, {"name": "Mario Meduri", "company": "Meduri Farms, Inc.", "email": "mario@medurifarms.com", "phone": ""}, {"name": "Mel Johnson", "company": "Melrose Farm", "email": "meljoh41@yahoo.com", "phone": "(503)362-2398"}, {"name": "Todd Merrill", "company": "Merril Blueberry Farms", "email": "", "phone": "207-667-9750"}, {"name": "Mike Williamson", "company": "Michael W. Williamson Farm", "email": "", "phone": "(269) 621-0032"}, {"name": "Larry Ensfield", "company": "Michigan Blueberry Growers (MBG Marketing)", "email": "lbillings@blueberries.com", "phone": "269-434-6791"}, {"name": "Richard Kiel", "company": "Midwest Blueberry Farms", "email": "", "phone": "(616) 399-2133"}, {"name": "Allen Miles", "company": "Miles Sunbelt Blueberry Corp.", "email": "", "phone": "(912) 367-4634"}, {"name": "James Brown", "company": "Milestone PLM Solutions Pvt", "email": "james.brown@milestonetech.net", "phone": "08445980005"}, {"name": "James Miller", "company": "Miller Blueberry Plantation, INC", "email": "", "phone": "(386)684-6362"}, {"name": "Ed or Jen Miller", "company": "Miller's Blueberries", "email": "", "phone": "(541) 746-1760"}, {"name": "David Luther", "company": "Milne Fruit Products, Inc.", "email": "dluther@milnefruit.com", "phone": "509-786-2611"}, {"name": "Jack Schroeder", "company": "Milne Fruit Products, Inc.", "email": "jshroeder@milnefruit.com", "phone": ""}, {"name": "Madylen Zweng", "company": "MIS Controls", "email": "info@miscontrols.com", "phone": "2489559500"}, {"name": "Philip Mixon", "company": "Mixon Farms", "email": "info@mixonfarms.com", "phone": "(912) 285-4912 (912) 218-2526 (M)"}, {"name": "Anthony Berenato", "company": "Mohawk Farms", "email": "", "phone": "(609) 561-7576"}, {"name": "Mary Ross", "company": "Mohawk Valley Trading Company", "email": "info@tenonanatche.com", "phone": "315-519-2640"}, {"name": "Garret Stahl", "company": "Montana State University", "email": "garret.stahl@montana.edu", "phone": "2089401171"}, {"name": "Roger Montavon", "company": "Montavons Berries", "email": "montavons@hrecn.net", "phone": "(541) 806-0316"}, {"name": "Jim Geiselman", "company": "Morning Shade Farm", "email": "jimgeiselman@canby.com", "phone": "503-651-2622"}, {"name": "Blaine Colvin", "company": "Motion Industries, Inc.", "email": "blaine.colvin@motion.com", "phone": "360-752-3303"}, {"name": "Melodee Dobbins", "company": "Motion Industries, Inc.", "email": "melodee.dobbins@motion.com", "phone": "13607523303"}, {"name": "Bruce O'Shea", "company": "Mountain Manufacturing", "email": "bruce@mtn-mfg.com", "phone": "12087701716"}, {"name": "Jeff Smith", "company": "Mountain Pacific Machinery", "email": "jsmith@mountpac.com", "phone": "503-784-6683"}, {"name": "Tom Jensen", "company": "Mountain Pacific Machinery", "email": "tjensen@mountpac.com", "phone": "206-465-2305"}, {"name": "Janet Stocker", "company": "Mountain View Berry Farm", "email": "info@mountainviewblueberryfarm.com", "phone": "(425) 754-6165"}, {"name": "Mark Simpson", "company": "Mountain View Farm", "email": "mtn-view@msn.com", "phone": "(360) 668-8036"}, {"name": "Jack Bennett", "company": "MSC Industrial Direct Co.,", "email": "jack.bennett@mscdirect.com", "phone": "12063908839"}, {"name": "Larry Loveland", "company": "Multi-Craft Contractors", "email": "lloveland@multi-craft.net", "phone": "14178696791"}, {"name": "Vincent Phillips", "company": "Munger Farms", "email": "vincent.phillips@mungerfarms.com", "phone": ""}, {"name": "Mark Stabile", "company": "Nabtesco Motion Control", "email": "mark@nabtescomotioncontrol.com", "phone": "(248)949-6470"}, {"name": "Nathan & Becky Clark", "company": "Nathan Lowe", "email": "nate.b.clark@gmail.com", "phone": "(360) 526-1297"}, {"name": "Nathan & Danielle Robbins", "company": "Nathan Lowe", "email": "dnrobbins@gmail.com", "phone": "310-733-0359"}, {"name": "Nathan Bishop", "company": "Nathan Lowe", "email": "bishop.nathan@gmail.com", "phone": "(360) 271-3644"}, {"name": "Nathan Spoelstra", "company": "Nathan Lowe", "email": "", "phone": "(360) 296-4536"}, {"name": "Natural Way Chiropractic", "company": "Nathan Lowe", "email": "staff_ferndale@naturalwaychiro.org", "phone": "(360) 384-1396"}, {"name": "Peter Narwal", "company": "Nathan Lowe", "email": "pnarwal9@yahoo.ca", "phone": "360-305-5008"}, {"name": "Dave Dalton", "company": "Nature's Path", "email": "ddalton@naturespath.com", "phone": "360-603-7200"}, {"name": "Paul Jennings", "company": "Nature's Path", "email": "pjennings@naturespath.com", "phone": "360-603-7200"}, {"name": "Rob Allen", "company": "Nature's Path", "email": "rallen@naturespath.com", "phone": "360-603-7200"}, {"name": "Robert Verloop", "company": "Naturipe Farms LLC", "email": "", "phone": "(239) 591-1664"}, {"name": "David Zapf", "company": "Naturipe Foods, LLC", "email": "dzapf@blueberries.com", "phone": "(269)434-8095"}, {"name": "Debbie Gustafson", "company": "Nelson Blueberry Farm", "email": "", "phone": "(252) 637-2180"}, {"name": "Julio Ortuzar", "company": "Nexus Produce, Inc.", "email": "luis@nexusproduce.com", "phone": "(561) 300-8010"}, {"name": "Bjorn Oestergaard", "company": "Ngi-Global", "email": "bjo@ngi-global.com", "phone": "+1213-283-0791"}, {"name": "Carlos Villalobos", "company": "nitronautomation.com", "email": "gerencia@nitronautomation.com", "phone": "+51940441108"}, {"name": "Marina Wittmann", "company": "NOCO Energy Corporation", "email": "mwittmann@noco.com", "phone": "7165255850"}, {"name": "Carrie Norris", "company": "Norris Blueberry Farms", "email": "carrie@norrisblueberryfarms.com", "phone": "+15414593274"}, {"name": "Paul Norris", "company": "Norris Farms, LLC", "email": "office@norrisfarms.com", "phone": "541-459-0829"}, {"name": "David Van Speybrock", "company": "Northwest Commodities Marketing, Inc.", "email": "david@nutluck.com", "phone": "503-647-7633"}, {"name": "Washington O'Brien", "company": "O'Brien's Riverside Blueberries", "email": "", "phone": "(269) 637-3861"}, {"name": "Adam Buhen", "company": "O-G Packing", "email": "", "phone": "209-931-4392"}, {"name": "Jeff Tucker", "company": "Oceana Foods", "email": "jtucker@oceanafoods.com", "phone": "123-861-2141"}, {"name": "Michael Pidcock", "company": "ohio-edu.org", "email": "procurement@ohio-edu.org", "phone": "7402098272"}, {"name": "Sam Grant", "company": "oneatlasgroupinc.com", "email": "samgrant@oneatlasgroupinc.com", "phone": "2082134088"}, {"name": "Brian Malensky", "company": "Oregon Berry Packing Co.", "email": "", "phone": "(503)640-2313"}, {"name": "Steve Kollars", "company": "Oregon Cherry Growers", "email": "skollars@orcherry.com", "phone": "503-485-5859"}, {"name": "Bryan Brown", "company": "Oregon Fruit Products Company", "email": "bryanb@ofpc.com", "phone": "(503)581-6211"}, {"name": "Carl Haynes", "company": "Oregon Fruit Products Company", "email": "carlh@oregonfruit.com", "phone": "5034099831"}, {"name": "Carlos Ostos", "company": "Ostos Projetos Industriais", "email": "cmarquez.ostos@gmail.com", "phone": "+5561996502232"}, {"name": "Paul Johnson", "company": "P&D Farms", "email": "", "phone": "(912)283-5399"}, {"name": "Leo Aquino", "company": "Pacematic Logistic LLC", "email": "laquinoperez@pacematiclogistic.com", "phone": "9086555342"}, {"name": "Ellen MacIntyre", "company": "Pacific Coast Fruit Products", "email": "info@pacificcoastfruit.com", "phone": "604-850-3505"}, {"name": "Albert Trail", "company": "Palletstech", "email": "info@palletstech.com", "phone": "(813)362-4816"}, {"name": "Steve Erickson", "company": "Panamerican Berry Growers", "email": "stevee@pbgblues.com", "phone": "503-390-5612"}, {"name": "Alex Eberhard", "company": "Patogonia Foods", "email": "aeberhard@patagoniafoods.com", "phone": ""}, {"name": "Paul Moore", "company": "Paul Moore Farm", "email": "", "phone": "(503) 393-9700"}, {"name": "Bruce Pearson", "company": "Pearson Engineering Services Inc.", "email": "btp081246@yahoo.com", "phone": "8139173789"}, {"name": "Jerry Keeler", "company": "Peek-A-Blue Berry Farm", "email": "peekablueberry@aol.com", "phone": "(607) 776-7274"}, {"name": "Risa Bakker", "company": "Penner Ag, Inc", "email": "pennerag@hotmail.com", "phone": "559-362-2067"}, {"name": "John Kamp", "company": "Pepper Source", "email": "jkamp@peppersource.com", "phone": "479-474-5178"}, {"name": "Sarah Peterson-Schlukebir", "company": "Peterson Farms, Inc.", "email": "sarah@petersonfarmsinc.com", "phone": "(231) 861-7101"}, {"name": "Marvin Phelps", "company": "Phelps Blueberries", "email": "", "phone": "(503) 663-0953"}, {"name": "Greg Floyd", "company": "pickledveggies.com", "email": "olives@pickledveggies.com", "phone": "9204776009"}, {"name": "Jose Pina", "company": "Pina Farms, LLC", "email": "", "phone": "(912) 339-2999"}, {"name": "Carlton Measley", "company": "Piney Hollow Farm", "email": "pineyhollowfarm@yahoo.com", "phone": "609-839-9279"}, {"name": "Annie Pape", "company": "Pleasantdale Farms, Inc.", "email": "anniepape@donio.com", "phone": ""}, {"name": "Dave Arena", "company": "Pleasantdale Farms, Inc.", "email": "david@donio.com", "phone": "609-561-2466"}, {"name": "Jim Donio", "company": "Pleasantdale Farms, Inc.", "email": "jim@donio.com", "phone": "(609) 561-2332"}, {"name": "Mar\u00eda Rodr\u00edguez", "company": "pmvpromoveit.com", "email": "m.rodriguez@pmvpromoveit.com", "phone": "03909078741"}, {"name": "Vinit Dabholkar", "company": "poiycab.com", "email": "vinit@poiycab.com", "phone": "+447823978507"}, {"name": "Bill Braswell", "company": "Polkdale Farms", "email": "wcbraswell@hotmail.com", "phone": "(863)255-3557"}, {"name": "Monice", "company": "Portland Trail Blazers", "email": "monice.wong@trailblazers.com", "phone": ""}, {"name": "Nick Reans", "company": "Power Engineering & Manufacturing", "email": "nreans@pemltd.com", "phone": "3194937736"}, {"name": "Douglas Sublett", "company": "Prairie States Industrial Supply", "email": "doug@prairiestatesind.com", "phone": ""}, {"name": "Najeeb Muhaimin", "company": "Pride Road", "email": "najeeb@prideroad.com", "phone": "4044231775"}, {"name": "Candice Parker", "company": "Prime Data Services", "email": "candice@primedataservices.com", "phone": ""}, {"name": "Jinni Selca", "company": "Prime Data Services", "email": "jinni@primedataservices.com", "phone": "7164175269"}, {"name": "Kiyara James", "company": "Prime Data Services", "email": "kiyara@primedataservices.com", "phone": ""}, {"name": "Matt Dwyer", "company": "PROEX FOOD", "email": "mattdwyer@proexfood.com", "phone": "7024968854"}, {"name": "David Cilli", "company": "Promontory", "email": "dcilli@promontory.wine", "phone": ""}, {"name": "Naveen Kataria", "company": "promote-website.com", "email": "seo@promote-website.com", "phone": ""}, {"name": "Naveen Kataria", "company": "promote-website.com", "email": "seo1@promote-website.com", "phone": ""}, {"name": "Rick Carlson", "company": "ProNova Partners", "email": "rc0322@pronovapartners.com", "phone": "8304654676"}, {"name": "Wilma Purcell", "company": "Purcells Blueberries", "email": "", "phone": "(541)746-0040"}, {"name": "Tifffany", "company": "Purewal blueberry farm.ca", "email": "tiffaney@purewalblueberry.ca", "phone": ""}, {"name": "Megan Kowell", "company": "QET website", "email": "megan@keweirobot.com", "phone": "+8613371030768"}, {"name": "Donald Wright", "company": "Quantaservicesenergy", "email": "d.wright@quantaservicesenergy.com", "phone": "7134912496"}, {"name": "BRADLEY BAUER", "company": "Rader Farms", "email": "bradleyb@andgar.com", "phone": "+13608154808"}, {"name": "Rader Farms", "company": "Rader Farms, Inc.", "email": "ap@raderfarms.com", "phone": ""}, {"name": "Janet Radke", "company": "Radke's Blueberries", "email": "janet.radke@gmail.com", "phone": ""}, {"name": "Plant Manager", "company": "Rainier Fruit Company", "email": "rainier@rainierfruit.com", "phone": ""}, {"name": "Linda Ervin", "company": "Rainsweet, Inc.", "email": "linda@rainsweet.com", "phone": "503-586-0049"}, {"name": "Balbirraiwal", "company": "Raiwal Agro-Tech Foods", "email": "balbirraiwal@raiwalgroup.com", "phone": ""}, {"name": "Braiwal", "company": "Raiwal Agro-Tech Foods", "email": "braiwal@raiwalgroup.com", "phone": ""}, {"name": "Rene Rambo", "company": "Rambo Blueberries", "email": "", "phone": "(269) 426-4074"}, {"name": "Aldo Fenoglio", "company": "Rapanui", "email": "aldo@rapanui.com.ar", "phone": "+5492944536087"}, {"name": "Levi Danielson", "company": "RAW Cider Co.", "email": "levi@rawcider.com", "phone": "5074599304"}, {"name": "Patricia Barnett", "company": "Redland Blueberries + Specialities", "email": "", "phone": "(503) 631-4141"}, {"name": "Ken Reenders", "company": "Reenders Blueberry Farm, LLC", "email": "", "phone": "(616) 842-5238"}, {"name": "ANDY COOK", "company": "Regenis", "email": "andyc@regenis.net", "phone": ""}, {"name": "Andy Hanson", "company": "Regenis", "email": "andyh@regenis.net", "phone": ""}, {"name": "BEAU KEMP", "company": "Regenis", "email": "beaukemp49@gmail.com", "phone": ""}, {"name": "BRANDON CASAS", "company": "Regenis", "email": "brandonc@regenis.net", "phone": ""}, {"name": "BROCK BENNER", "company": "Regenis", "email": "brockbenner@gmail.com", "phone": ""}, {"name": "BRYAN VAN LOO", "company": "Regenis", "email": "bryanv@regenis.net", "phone": ""}, {"name": "Chris Ivy", "company": "Regenis", "email": "chrisi@regenis.net", "phone": ""}, {"name": "CORY VANDERHAGE", "company": "Regenis", "email": "coryv@regenis.net", "phone": ""}, {"name": "Craig Frear", "company": "Regenis", "email": "craigf@regenis.net", "phone": ""}, {"name": "DAVID DIAS", "company": "Regenis", "email": "davidd@regenis.net", "phone": ""}, {"name": "DYLAN NEIMEYER", "company": "Regenis", "email": "dylann@regenis.net", "phone": ""}, {"name": "Eric Powell", "company": "Regenis", "email": "ericp@regenis.net", "phone": ""}, {"name": "JACOB ROCHA", "company": "Regenis", "email": "jacobr@regenis.net", "phone": ""}, {"name": "JAMES HINSON", "company": "Regenis", "email": "jamesh@regenis.net", "phone": "866.578.8630"}, {"name": "Jesus Martinez", "company": "Regenis", "email": "jesusm@regenis.net", "phone": ""}, {"name": "JOESEPH ROBINSON", "company": "Regenis", "email": "joeyr@regenis.net", "phone": ""}, {"name": "Jon Opper", "company": "Regenis", "email": "jono@regenis.net", "phone": ""}, {"name": "JOSHUA KAYLOR", "company": "Regenis", "email": "joshk@regenis.net", "phone": ""}, {"name": "Kyle Juergens", "company": "Regenis", "email": "kylej@regenis.net", "phone": ""}, {"name": "MARK VANDERHAGE", "company": "Regenis", "email": "markv@regenis.net", "phone": ""}, {"name": "MATTHEW EISENACH", "company": "Regenis", "email": "meisenach18@gmail.com", "phone": ""}, {"name": "MICHAEL MCKAY", "company": "Regenis", "email": "michaelm@regenis.net", "phone": ""}, {"name": "NATHAN HANCOCK", "company": "Regenis", "email": "nathanh@regenis.net", "phone": ""}, {"name": "ROBERT ALEXANDER", "company": "Regenis", "email": "ralexander1226@gmail.com", "phone": ""}, {"name": "SCOTT MCRAE", "company": "Regenis", "email": "scottm@regenis.net", "phone": ""}, {"name": "SCOTT SEDMAN", "company": "Regenis", "email": "ssedman@hotmail.com", "phone": ""}, {"name": "TODD ANDREW", "company": "Regenis", "email": "todda@regenis.net", "phone": ""}, {"name": "Trent Workentin", "company": "Regenis", "email": "trentw@regenis.net", "phone": "+13608511937"}, {"name": "WILLIAM ACKLIN", "company": "Regenis", "email": "billa@regenis.net", "phone": ""}, {"name": "WILLIAM OROZCO HERRERA", "company": "Regenis", "email": "willyrosco94an20016@gmail.com", "phone": ""}, {"name": "Patricio Brevis", "company": "Reiter Bros. Inc.", "email": "", "phone": "(805)982-7363"}, {"name": "Justin", "company": "Reusable Transport Packaging Inc", "email": "sales@reusabletranspack.com", "phone": "727-308-2324"}, {"name": "Carole Henderson", "company": "riatoinc.com", "email": "carole.henderson@riatoinc.com", "phone": "3058674482"}, {"name": "Rob Richert", "company": "Richert Blueberries, LLC", "email": "richertfamilyblueberries@gmail.com", "phone": "616-550-5330"}, {"name": "Ora Richert, Jr.", "company": "Richert Farm", "email": "", "phone": "(616) 844-0438"}, {"name": "Jesse Shelly", "company": "RipeLocker", "email": "jesse@ripelocker.com", "phone": "2533503007"}, {"name": "jessica jones", "company": "rklog.us", "email": "jessica@rklog.us", "phone": "2068951510"}, {"name": "Sandra Rose", "company": "Rose's Berry Farm, LLC", "email": "", "phone": "(860) 633-6001"}, {"name": "Deborah Dedmon", "company": "Roy Farms", "email": "ap@royfarms.com", "phone": ""}, {"name": "Bryce Dorsing", "company": "Royal Ridge Fruit & Cold Storage", "email": "bryce@royalridgefruits.com", "phone": "509-346-1520"}, {"name": "Jorge Lopez", "company": "Royal Ridge Fruit & Cold Storage", "email": "jorge.lopez@royalridgefruits.com", "phone": "(509) 346-1520 Ext. 222"}, {"name": "Shiggins", "company": "Royal Ridge Fruit & Cold Storage", "email": "shiggins@royalridgefruits.com", "phone": ""}, {"name": "Roy L. Adkin", "company": "RoyalMark Services, LLC", "email": "", "phone": "(269) 637-7450"}, {"name": "Sheila Young-Eberhart", "company": "Rubicon Bakery", "email": "seberhart@rubiconbakery.com", "phone": "5106724240"}, {"name": "Brad Hall", "company": "Ryaan transportation", "email": "dispatch44@ryaantrans.com", "phone": "19454682281"}, {"name": "Neal DeMun", "company": "Ryerson", "email": "neal.demun@ryerson.com", "phone": "+1-425-518-1498"}, {"name": "Scott Kamphius", "company": "S. Kamphius Blueberries, LTD", "email": "sbkamp@egl.net", "phone": "616-399-9545"}, {"name": "Bryan Sakuma", "company": "Sakuma Bros. Processing, Inc.", "email": "bryans@sakumabros.com", "phone": ""}, {"name": "Davian Ponce", "company": "Sakuma Bros. Processing, Inc.", "email": "davianp@sakumabros.com", "phone": ""}, {"name": "Mike Lee", "company": "Sakuma Bros. Processing, Inc.", "email": "mikel@sakumabros.com", "phone": "(360) 757-3822"}, {"name": "Davidh", "company": "Sak\u00e9One", "email": "davidh@sakeone.com", "phone": ""}, {"name": "Rob Dhaliwal", "company": "Samson Farms", "email": "rob@samsonfarms.com", "phone": ""}, {"name": "Mitch Hagney", "company": "San Antonio Food Bank", "email": "mhagney@safoodbank.org", "phone": "2104318375"}, {"name": "Rebecca Podyminogin", "company": "Sana Biotechnology Inc", "email": "rebecca.podyminogin@sana.com", "phone": "206-300-6968"}, {"name": "H.R. Sandercock", "company": "Sandercock Blueberries", "email": "", "phone": "(503)668-6274"}, {"name": "Kewal Sandhu", "company": "Sandhu Farms", "email": "sandhuken@hotmail.com", "phone": ""}, {"name": "Amy Jones", "company": "Savvie Island Blueberry Farm", "email": "", "phone": "(503) 621-3332"}, {"name": "Eric Chou", "company": "sawawada.com", "email": "eric@sawawada.com", "phone": "+886225923505"}, {"name": "Derek Eisele", "company": "Scenic Fruit Company", "email": "derek.eisele@scenicfruit.com", "phone": "(503) 663-3434"}, {"name": "Roman Ortega", "company": "Scenic Fruit Company", "email": "roman.ortega@scenicfruit.com", "phone": "503-663-3434 ext 105"}, {"name": "Ruben Casas", "company": "Scenic Fruit Company", "email": "ruben.casas@scenicfruit.com", "phone": "5036633434"}, {"name": "Jodi Dunn", "company": "SCF General Contractors,", "email": "jodi@scfgeneralcontractors.com", "phone": "2537705858"}, {"name": "Julie Schedeen", "company": "Schedeen Farms", "email": "", "phone": "503-658-4730"}, {"name": "Dave Schmerber", "company": "Schmerber Farm & Nursery", "email": "fruitfarmer@msn.com", "phone": "(503) 393-8911"}, {"name": "Christine Grovenstein", "company": "Seeds of Love Nursery", "email": "christinegrovenstein@verizon.net", "phone": "(813)689-3486"}, {"name": "Dsaunders", "company": "Seneca Foods Corporation", "email": "dsaunders@senecafoods.com", "phone": "5854954100"}, {"name": "Tawinder Mann", "company": "Sensient Technologies Corporation", "email": "tawinder.mann@sensient.com", "phone": "12094495987"}, {"name": "Liam Hawkins", "company": "SEO Vendor", "email": "liam@seovendor.co", "phone": ""}, {"name": "Brian Lewis", "company": "Serve Electric", "email": "blewis@serveelectric.com", "phone": "586-999-1630"}, {"name": "Scott Swanson", "company": "shaverswanson.com", "email": "swanson@shaverswanson.com", "phone": "(208) 345-1122"}, {"name": "Bobbi", "company": "Sherwood Farms", "email": "tyke@wvi.com", "phone": "(503) 769-7325"}, {"name": "Randy Atwater", "company": "Shoreline Fruit", "email": "randyatwater@shorelinefruit.com", "phone": "585-765-2639 x103"}, {"name": "Jessica Waters", "company": "Silent Springs, LLC", "email": "", "phone": "(805)483-0369"}, {"name": "Ray Biln", "company": "Silver Valley Farms", "email": "info@silvervalleyfarms.ca", "phone": "+16044669774"}, {"name": "Aspen Hockins", "company": "silverleafcooperative.com", "email": "aspen@silverleafcooperative.com", "phone": ""}, {"name": "Serge Lazaresku", "company": "Skyline Transport Group", "email": "serge.lazer@skylinetg.us", "phone": "9168780510"}, {"name": "Ethel L. Smith", "company": "Smith's Blueberries", "email": "", "phone": "(541) 747-7779"}, {"name": "Brent Clark", "company": "Sno-Co Berry Pak, LLC", "email": "clarksberryfarm@hotmail.com", "phone": "360-354-8452"}, {"name": "Ray Biln", "company": "Snowcrest Foods", "email": "", "phone": "604-859-4881"}, {"name": "Virginia Higashi", "company": "Solimar Farms, Inc.", "email": "virginia@solimarfarms.com", "phone": "805-986-8806"}, {"name": "Gary Powers", "company": "Solo Foods", "email": "gpowers@solofoods-nc.com", "phone": "910-259-9407"}, {"name": "Matthew Kirkpatrick", "company": "South Mill Mushrooms Sales", "email": "mkirkpatrick@southmill.com", "phone": ""}, {"name": "Juana Chavez", "company": "Southern Belle LLC", "email": "", "phone": "(616) 842-3916"}, {"name": "David Hill", "company": "Southern Hill Farms", "email": "", "phone": "407-619-2846"}, {"name": "Emma Green", "company": "spectralogistix.com", "email": "emma@spectralogistix.com", "phone": "(415)874-1037"}, {"name": "Brian O'Driscoll", "company": "Springbank Farm", "email": "info@springbankfarm.org", "phone": "503-819-6209"}, {"name": "Charles Carson", "company": "Springfield Mechanical Services", "email": "dcarson@springfieldmechanical.com", "phone": "4177663248"}, {"name": "Carl Chambers", "company": "Stahlbush Island Farms", "email": "carl@stahlbush.com", "phone": "+15417571497"}, {"name": "Debbie", "company": "Stahlbush Island Farms", "email": "debbie@stahlbush.com", "phone": "541-757-1497"}, {"name": "Ember Boulanger", "company": "Stahlbush Island Farms", "email": "ember@stahlbush.com", "phone": "15412300826"}, {"name": "Richard Stevens", "company": "Stevens Blueberries", "email": "", "phone": "(609) 894-8725"}, {"name": "Jennifer Van Buren", "company": "Stiebs", "email": "jvanburen@stiebs.com", "phone": "559-661-0031"}, {"name": "Roger Stokes", "company": "Stokes Blueberry Farms and Nursery", "email": "stokes@stokesblueberries.com", "phone": "(269) 427-8675"}, {"name": "Shepherd Makoni", "company": "Sub Sahara Farmers Journal", "email": "shepherd.makoni@subsaharafarming.com", "phone": "+27742966628"}, {"name": "Sue Anderson", "company": "Sue's Blueberries", "email": "", "phone": "(503)760-2025"}, {"name": "Ron Campanella", "company": "Sumitomoshi-Fw", "email": "ronald.campanella@sumitomoshi-fw.com", "phone": "2098746676"}, {"name": "Janice Honigberg", "company": "Sun Belle", "email": "janice@sun-belle.com", "phone": ""}, {"name": "Ken Hopps", "company": "Sun Belle", "email": "khopps@sun-belle.com", "phone": ""}, {"name": "Mark Lemke", "company": "Sun Belle", "email": "mlemke@sun-belle.com", "phone": ""}, {"name": "Francisco Allende", "company": "Sunny Valley International", "email": "sales@sunnyint.com", "phone": "(856) 881-0200"}, {"name": "Greg Mixon", "company": "SunnyRidge Farm, Inc. -Dole", "email": "", "phone": "(863) 299-1894"}, {"name": "Velma Orcutt", "company": "Sunrise County Wild Blueberry Assoc.", "email": "", "phone": "207-546-7205"}, {"name": "Tom Maskal", "company": "Sunrise Farm", "email": "", "phone": "(253) 845-2856"}, {"name": "Niel Monroe", "company": "Sunrise Growers", "email": "", "phone": "714-630-6292"}, {"name": "Bob Wilt", "company": "Sunset Valley Organics", "email": "wiltfarms@comcast.net", "phone": "541-752-0460"}, {"name": "Rbhatti", "company": "sutterfoods.com", "email": "rbhatti@sutterfoods.com", "phone": ""}, {"name": "Dan Baines", "company": "Syntaktsystems", "email": "dbaines@syntaktsystems.com", "phone": "864-887-2116"}, {"name": "Mmiranda", "company": "T P EQUIPMENT LEASING", "email": "mmiranda@southmillcom.onmicrosoft.com", "phone": ""}, {"name": "Ray Rejchma", "company": "T-Berry Farms, Inc.", "email": "", "phone": "(616)846-6065"}, {"name": "Young Kwun", "company": "Tabitha Max Blueberry Farm, LLC", "email": "ykwun@yahoo.com", "phone": "(559)791-8852"}, {"name": "Paul Perry", "company": "Tallgrass Freight", "email": "pperry@tallgrassfreight.com", "phone": "6026223719"}, {"name": "Joel Wood", "company": "Taylor Shellfish Farms", "email": "joelw@taylorshellfish.com", "phone": ""}, {"name": "Cassie Wang", "company": "Techman Robot", "email": "cassie.wang@tm-robot.com", "phone": "+886 3328835012122"}, {"name": "David Ernst", "company": "Terra Beata Farms", "email": "david.ernst@terrabeata.ca", "phone": "9025290412"}, {"name": "Nancy Wilson", "company": "The Blue's Berry Farm", "email": "", "phone": "(541) 278-2404"}, {"name": "David Thompson", "company": "The Gallivanting Goat", "email": "thegallivantinggoat@outlook.com", "phone": "4069090034"}, {"name": "Ruben Soto", "company": "The J.M. Smucker Company", "email": "ruben.soto@jmsmucker.com", "phone": ""}, {"name": "Deb Schmid", "company": "The Schmid Family Farm", "email": "debras3157@canby.com", "phone": "(503)266-5717"}, {"name": "Alissa Brooks", "company": "Theeventsonline", "email": "alissa.brooks@theeventsonline.com", "phone": ""}, {"name": "Anne Portman", "company": "theheritageseo.com", "email": "anne@theheritageseo.com", "phone": ""}, {"name": "Ariana Smith", "company": "theheritageseo.com", "email": "ariana@theheritageseo.com", "phone": "5712007758"}, {"name": "Doug Ramsey", "company": "Theonlinecatalog", "email": "dramsey@renoforklift.com", "phone": "775-329-1384"}, {"name": "Christine Proctor", "company": "thinkwrigtz.com", "email": "christine@thinkwrigtz.com", "phone": "04807613303"}, {"name": "Susan", "company": "thinkwrigtz.com", "email": "susan@thinkwrigtz.com", "phone": ""}, {"name": "Karen Avinelis", "company": "Thomas Creek Farms", "email": "karen@thomascreekfarms.com", "phone": "559.306.1260"}, {"name": "Howard Thompson", "company": "Thompson Bees & Berries", "email": "", "phone": "(417)781-0648"}, {"name": "Tom Thornhill", "company": "Thornhill Farms, LLC", "email": "tom@thornhilllawfirm.com", "phone": "(601) 795-2328"}, {"name": "RUDIEL GONZALEZ", "company": "TIME 2 GROW", "email": "usapinton@gmail.com", "phone": ""}, {"name": "Steve Stevkovski", "company": "Titan Frozen", "email": "steve@titanfrozen.com", "phone": "805-365-3081"}, {"name": "Rebecca Llinde", "company": "Tldlogistics", "email": "rlinde@tldlogistics.com", "phone": ""}, {"name": "JODY HAYNES", "company": "TOJO Properties, LLC", "email": "tojoproperties@gmail.com", "phone": ""}, {"name": "Casey Gillette", "company": "Top Hat Mushrooms", "email": "info@tophatmushrooms.com", "phone": ""}, {"name": "Robin Gillette", "company": "Top Hat Mushrooms", "email": "robin@tophatmushrooms.com", "phone": ""}, {"name": "Billy Townsend", "company": "Townsend Farms, Inc.", "email": "billy@townsendfarms.com", "phone": "+15037011198"}, {"name": "Mike Townsend", "company": "Townsend Farms, Inc.", "email": "mike@townsendfarms.com", "phone": "(503) 666-1780"}, {"name": "Diana Norman", "company": "Tradeshowsmanagement", "email": "d.norman@tradeshowsmanagement.com", "phone": "3012687584"}, {"name": "Chris", "company": "Transpacific Food Inc.", "email": "chris@transpacificfood.com", "phone": "503-610-1670"}, {"name": "Andy Juarez", "company": "Tree Top", "email": "andy.juarez@treetop.com", "phone": "5098340554"}, {"name": "Josh Stimson", "company": "TreeHouse Foods", "email": "josh.stimson@treehousefoods.com", "phone": "(502)222-2761"}, {"name": "Larry Tremaine", "company": "Tremaine Farms", "email": "tremainejr@juno.com", "phone": "360-354-5552"}, {"name": "Colin Campbell", "company": "Trident Seafoods Corporation", "email": "ccampbell@tridentseafoods.com", "phone": "3602231599"}, {"name": "Dennis Hartman", "company": "True Blue Farms", "email": "", "phone": "269-906-0385"}, {"name": "Jon Mathes", "company": "True Blue Farms", "email": "", "phone": "269-214-8192"}, {"name": "Shelly Hartman", "company": "True Blue Farms", "email": "shelly@truebluefarms.com", "phone": "(269) 434-6112"}, {"name": "TRISTAN SILVEIRA", "company": "tsd9k12.org", "email": "silveirat2014@tsd9k12.org", "phone": ""}, {"name": "Karen", "company": "Tualatin Valley Blueberry", "email": "", "phone": "(503) 628-0772"}, {"name": "Cheryl & Chris Joyce", "company": "Union Jack Tools, LLC", "email": "", "phone": "800-672-8119"}, {"name": "Jenny Hurst", "company": "Uren Food Group", "email": "jenny.hurst@uren.com", "phone": "+44 (0)151 353 0330"}, {"name": "Nick Duyck", "company": "Valley Blue Farms,Inc", "email": "valleybluefarms@gmail.com", "phone": "(503) 359-5110"}, {"name": "Charlie Meyers", "company": "Valley Processing, Inc.", "email": "charlie@valleyprocessing.com", "phone": "509-837-8084 x817"}, {"name": "Vicki Duchesneau", "company": "Valley View Blueberries, Inc.", "email": "valley.view@comcast.net", "phone": "(360) 892-2939"}, {"name": "Carl De Vries", "company": "Van Drunen Farms", "email": "cdevries@vandrunen.com", "phone": "815-472-3100x127"}, {"name": "Casey Van Dyk", "company": "Van Dyk's", "email": "info@vandykblueberries.ca", "phone": "902542-4405"}, {"name": "Melvin VanKley", "company": "Van Kley's Blueberries", "email": "", "phone": "(219) 956-3687"}, {"name": "Diana Vettese", "company": "Vettese Blueberries", "email": "", "phone": "(609) 965-3115"}, {"name": "Jason Clark", "company": "VIA Studio", "email": "jason@viastudio.com", "phone": ""}, {"name": "Robin Renee", "company": "Viewpoint Project with Dennis Quaid", "email": "robin@viewpointproject.com", "phone": "15612447650"}, {"name": "Isaac C\u00e1rcamo", "company": "Vitafoods", "email": "icarcamo@vitafoods.com", "phone": "+56 9 6848 4798"}, {"name": "Mike Wadsworth", "company": "Wadsworth Blueberries", "email": "jmw6803@yahoo.com", "phone": "205-525-4708"}, {"name": "Pat Walter", "company": "Walter's Blueberries", "email": "plw0151@aol.com", "phone": "(503) 663-0157"}, {"name": "Phillip Vela", "company": "Walterpmooregroup", "email": "phillipvela@walterpmooregroup.com", "phone": "6024457777"}, {"name": "Karl Dahlgren", "company": "Washington Employment Security Department", "email": "karl.dahlgren@commerce.wa.gov", "phone": "2062566132"}, {"name": "Will Hamilton", "company": "WCC International", "email": "will@wccinternational.com", "phone": ""}, {"name": "Daniel Graves", "company": "we are Oceano Services', 'Oceano Services", "email": "daniel@oceanoservices.com", "phone": "15154271358"}, {"name": "Abundio Corchado", "company": "wecotek", "email": "abundio@wecotek.com", "phone": ""}, {"name": "Don Douglas", "company": "wecotek", "email": "don.d@wecotek.com", "phone": "530-666-9190"}, {"name": "Scott Mainord", "company": "wecotek", "email": "scott.m@wecotek.com", "phone": ""}, {"name": "Shaun Harcourt", "company": "wecotek", "email": "shaun@wecotek.com", "phone": ""}, {"name": "Al Wereszczak", "company": "Wereszczak's Blueberries", "email": "", "phone": "(315)867-5735"}, {"name": "Carl Nelson", "company": "West Michigan Processing Co-op, Inc.", "email": "", "phone": "616-850-9040"}, {"name": "Parm Bains", "company": "Westberry Farms LTD", "email": "parm@westberryfarms.com", "phone": "(604)-850-0377"}, {"name": "Alan Westfall", "company": "Westfall Tanks", "email": "awestfall@westfallcompany.com", "phone": ""}, {"name": "Dave", "company": "WestLake Produce Co.", "email": "ddirkse@westlakeproduce.com", "phone": "(863)401-3404"}, {"name": "Sean Berg", "company": "Westmark Labels & Marking", "email": "sberg@westmarklm.com", "phone": "5034063716"}, {"name": "Jeffrey Whalen", "company": "Whalen Farms", "email": "jeff@whalenfarms.com", "phone": "(609) 268-8047"}, {"name": "Frank DeVries", "company": "Whatcom Fruit", "email": "admin@berryacres.com", "phone": "360-354-1134"}, {"name": "Vicky E. Rey", "company": "Whispering Oak Blueberry Farm, Inc.", "email": "", "phone": "(727) 808-7745"}, {"name": "Stacy Walker", "company": "Wify", "email": "stacy@wifyco.com", "phone": "12054177002"}, {"name": "Jim Mahon", "company": "Wilcox Farms", "email": "jmahon@wilcoxfarms.net", "phone": "3602394344"}, {"name": "Mathieu McCaron", "company": "wild-blueberries.com", "email": "mcaron@wild-blueberries.com", "phone": "+15812351365"}, {"name": "Derek Imig", "company": "Williamette Valley Fruit Co.", "email": "info@wvfco.com", "phone": "(503) 362-8678"}, {"name": "Jeff Mangahas", "company": "Williams Selyem", "email": "jeff@williamsselyem.com", "phone": ""}, {"name": "Chuck Wills", "company": "Wills Berry Hill", "email": "", "phone": "(503) 695-5900"}, {"name": "Erin Rant", "company": "Wind Dancer Farms", "email": "erant20@hotmail.com", "phone": "616-842-5079"}, {"name": "Amber Maloney", "company": "Wish Farms", "email": "amber@wishfarms.com", "phone": ""}, {"name": "Brian Deese", "company": "Wish Farms", "email": "bdeese@wishfarms.com", "phone": ""}, {"name": "Chuck Hollenkamp", "company": "Wish Farms", "email": "chuck@wishfarms.com", "phone": "(813) 752-5111"}, {"name": "JC Clinard", "company": "Wish Farms", "email": "jc@wishfarms.com", "phone": ""}, {"name": "Joe Powell", "company": "Wish Farms", "email": "jpowell@wishfarms.com", "phone": ""}, {"name": "Jose Saca", "company": "Wish Farms", "email": "jsaca@wishfarms.com", "phone": ""}, {"name": "Jong Wan Kim", "company": "Wooyang Frozen Foods Co.Ltd.", "email": "jongwankim@foodkorea.com", "phone": "+8227023732"}, {"name": "Amy Hodges", "company": "Wrigley\u2019s Fields, LLC", "email": "amyhodges1@comcast.net", "phone": ""}, {"name": "Dan Hodges", "company": "Wrigley\u2019s Fields, LLC", "email": "dan.hodges@hmgjax.com", "phone": "(904)219-7137"}, {"name": "Greg Murphy", "company": "Wrigley\u2019s Fields, LLC", "email": "melissamaria81@gmail.com", "phone": ""}, {"name": "Dave Wyckoff", "company": "Wyckoff Farms, Inc.", "email": "davew@wyckoff-farms.com", "phone": "(509) 882-3934"}, {"name": "Yolanda Yang", "company": "xmpinnacle.com", "email": "yolanda@xmpinnacle.com", "phone": ""}, {"name": "Bruce Simpson", "company": "YAAX International, Inc.", "email": "bruce@yaax.com", "phone": "509-249-5555"}, {"name": "Mario Zamora", "company": "Zamora Farms", "email": "", "phone": "(503) 263-6775"}, {"name": "Beth Fleming", "company": "zaza-corp.com", "email": "beth.fleming@zaza-corp.com", "phone": "81-50-3591-7257"}, {"name": "Coraline Blythe", "company": "zaza-net.com", "email": "coraline.blythe@zaza-net.com", "phone": ""}, {"name": "Jessica Smith", "company": "zaza-net.com", "email": "jessica.smith@zaza-net.com", "phone": ""}, {"name": "Mia Dawson", "company": "zaza-net.com", "email": "mia.dawson@zaza-net.com", "phone": ""}, {"name": "Samantha Wright", "company": "zaza-net.com", "email": "samantha.wright@zaza-net.com", "phone": "6284005835"}, {"name": "Sarah Brown", "company": "zaza-net.com", "email": "sarah.brown@zaza-net.com", "phone": "6284005835"}, {"name": "Eric Horner", "company": "Zirkle Fruit", "email": "eric@wecotek.com", "phone": ""}, {"name": "Jeff Gill", "company": "Zirkle Fruit", "email": "jeffg@zirklefruit.com", "phone": "509-697-6101"}, {"name": "Nick Schram", "company": "Zirkle Fruit", "email": "nicks@zirklefruit.com", "phone": ""}, {"name": "Will Ratto", "company": "Zirkle Fruit", "email": "will.r@wecotek.com", "phone": ""}];
+
+// ── Build a deduplicated company index once ────────────────────────────────
+const COMPANY_INDEX = (()=>{
+  const map = {};
+  CUSTOMERS.forEach(c=>{
+    const key = c.company ? c.company.trim().toLowerCase() : ('__'+c.name.trim().toLowerCase());
+    const label = c.company ? c.company : c.name;
+    if(!map[key]) map[key] = {label, contacts:[]};
+    map[key].contacts.push(c);
+  });
+  return Object.values(map).sort((a,b)=>a.label.localeCompare(b.label));
+})();
+
+let custHighlight = -1;
+
+function searchCustomers(q){
+  const dd=document.getElementById('cust-dd');
+  if(!dd)return;
+  const v=(q||'').trim().toLowerCase();
+  if(!v){dd.style.display='none';return;}
+  const matches=COMPANY_INDEX.filter(g=>
+    g.label.toLowerCase().includes(v)||
+    g.contacts.some(c=>c.name.toLowerCase().includes(v))
+  ).slice(0,12);
+  if(!matches.length){dd.style.display='none';return;}
+  custHighlight=-1;
+  dd._matches=matches;
+  dd.innerHTML=matches.map((g,i)=>{
+    const count = g.contacts.length;
+    const sub = count>1
+      ? `${count} contacts`
+      : (g.contacts[0].email||g.contacts[0].phone||'');
+    return `<div class="cust-opt" data-i="${i}" onmousedown="selectCustomer(${i},event)">
+      <div class="cust-opt-name">${g.label}</div>
+      ${sub?`<div class="cust-opt-company">${sub}</div>`:''}
+    </div>`;
+  }).join('');
+  dd.style.display='block';
+}
+
+function selectCustomer(idx, e){
+  if(e)e.preventDefault();
+  const dd=document.getElementById('cust-dd');
+  if(!dd||!dd._matches)return;
+  const group=dd._matches[idx];
+  if(!group)return;
+  document.getElementById('f-client').value=group.label;
+  dd.style.display='none';
+
+  const emailEl=document.getElementById('f-emails');
+  const phoneEl=document.getElementById('f-phones');
+
+  if(group.contacts.length===1){
+    const c=group.contacts[0];
+    if(emailEl&&c.email) emailEl.value=c.email;
+    if(phoneEl&&c.phone) phoneEl.value=c.phone;
+    hideModalPeoplePicker();
+  } else {
+    // Clear fields and show picker
+    if(emailEl) emailEl.value='';
+    if(phoneEl) phoneEl.value='';
+    showModalPeoplePicker(group.contacts);
+  }
+}
+
+function showModalPeoplePicker(contacts){
+  const panel=document.getElementById('modal-contact-people');
+  if(!panel)return;
+  panel.style.display='block';
+  panel.innerHTML=`
+    <div style="font-size:11px;font-family:'DM Mono',monospace;color:var(--text3);margin-bottom:5px;text-transform:uppercase;letter-spacing:.5px">Select contact</div>
+    ${contacts.map((c,i)=>`
+      <div class="contact-item" style="cursor:pointer;margin-bottom:4px" onclick="pickModalContact(${i})">
+        <span class="ci">👤</span>
+        <span style="flex:1;font-weight:500">${c.name}</span>
+        <span style="font-size:11px;color:var(--text3)">${[c.email,c.phone].filter(Boolean).join(' · ')}</span>
+      </div>`).join('')}`;
+  // Store contacts for picking
+  panel._contacts=contacts;
+}
+
+function pickModalContact(i){
+  const panel=document.getElementById('modal-contact-people');
+  if(!panel||!panel._contacts)return;
+  const c=panel._contacts[i];
+  const emailEl=document.getElementById('f-emails');
+  const phoneEl=document.getElementById('f-phones');
+  if(emailEl&&c.email){
+    const cur=(emailEl.value||'').trim();
+    emailEl.value=cur&&!cur.includes(c.email)?(cur+', '+c.email):c.email;
+  }
+  if(phoneEl&&c.phone){
+    const cur=(phoneEl.value||'').trim();
+    phoneEl.value=cur&&!cur.includes(c.phone)?(cur+', '+c.phone):c.phone;
+  }
+  // Highlight selected row
+  panel.querySelectorAll('.contact-item').forEach((el,idx)=>{
+    el.style.background=idx===i?'var(--blue-bg)':'';
+    el.style.color=idx===i?'var(--blue-txt)':'';
+  });
+}
+
+function hideModalPeoplePicker(){
+  const panel=document.getElementById('modal-contact-people');
+  if(panel){panel.style.display='none';panel.innerHTML='';panel._contacts=null;}
+}
+
+function showPeoplePicker(contacts){
+  // Remove any existing picker
+  const old=document.getElementById('people-picker');
+  if(old)old.remove();
+
+  const emailEl=document.getElementById('f-emails');
+  if(!emailEl)return;
+  const wrap=emailEl.closest('.ff')||emailEl.parentElement;
+
+  const picker=document.createElement('div');
+  picker.id='people-picker';
+  picker.style.cssText='background:var(--surface);border:1px solid var(--border2);border-radius:10px;box-shadow:0 8px 24px rgba(0,0,0,.13);margin-top:6px;overflow:hidden;max-height:200px;overflow-y:auto';
+
+  const header=document.createElement('div');
+  header.style.cssText='font-size:10px;font-family:"DM Mono",monospace;color:var(--text3);text-transform:uppercase;letter-spacing:.5px;padding:8px 14px 4px;border-bottom:1px solid var(--border)';
+  header.textContent='Select contact to add';
+  picker.appendChild(header);
+
+  contacts.forEach(c=>{
+    const row=document.createElement('div');
+    row.style.cssText='padding:9px 14px;cursor:pointer;font-size:13px;border-bottom:1px solid var(--border);transition:background .1s';
+    row.innerHTML=`<div style="font-weight:500;color:var(--text)">${c.name}</div>${c.email||c.phone?`<div style="font-size:11px;color:var(--text3);font-family:'DM Mono',monospace;margin-top:2px">${[c.email,c.phone].filter(Boolean).join(' · ')}</div>`:''}`;
+    row.onmouseenter=()=>row.style.background='var(--surface2)';
+    row.onmouseleave=()=>row.style.background='';
+    row.onmousedown=(e)=>{
+      e.preventDefault();
+      // Append to existing fields (allow multiple)
+      const emailEl=document.getElementById('f-emails');
+      const phoneEl=document.getElementById('f-phones');
+      if(emailEl&&c.email){
+        const cur=(emailEl.value||'').trim();
+        emailEl.value=cur?(cur+', '+c.email):c.email;
+      }
+      if(phoneEl&&c.phone){
+        const cur=(phoneEl.value||'').trim();
+        phoneEl.value=cur?(cur+', '+c.phone):c.phone;
+      }
+      row.style.background='var(--green-bg)';
+      row.style.color='var(--green-txt)';
+      setTimeout(()=>{row.style.background='';row.style.color='';},600);
+    };
+    picker.appendChild(row);
+  });
+
+  // Close button
+  const close=document.createElement('div');
+  close.style.cssText='padding:8px 14px;font-size:12px;color:var(--text3);cursor:pointer;text-align:center;font-family:"DM Mono",monospace';
+  close.textContent='Done';
+  close.onmousedown=(e)=>{e.preventDefault();picker.remove();};
+  picker.appendChild(close);
+
+  wrap.appendChild(picker);
+
+  // Auto-remove when clicking away
+  setTimeout(()=>{
+    document.addEventListener('click', function rem(ev){
+      if(!picker.contains(ev.target)){picker.remove();document.removeEventListener('click',rem);}
+    });
+  },100);
+}
+function toggleRecTranscript(btn){
+  const text = btn.getAttribute('data-text');
+  let box = btn.nextElementSibling;
+  if(box && box.classList.contains('rec-transcript-box')){
+    box.remove(); return;
+  }
+  box = document.createElement('div');
+  box.className = 'rec-transcript-box';
+  box.style.cssText='width:100%;margin-top:4px;padding:8px 10px;background:var(--surface2);border:1px solid var(--border);border-radius:8px;font-size:12px;color:var(--text2);white-space:pre-wrap;font-family:Sora,sans-serif;grid-column:1/-1';
+  box.textContent = text;
+  // Insert after the rm button (last child of rDiv)
+  btn.parentElement.insertAdjacentElement('afterend', box);
+}
+
+// ── IndexedDB for voice recordings ────────────────────────────────────────
+let idb=null;
+function openIDB(){
+  return new Promise((res,rej)=>{
+    const req=indexedDB.open('andgar_fpe',2);
+    req.onupgradeneeded=e=>{
+      const db=e.target.result;
+      if(!db.objectStoreNames.contains('recordings')){
+        db.createObjectStore('recordings',{keyPath:'id'});
+      }
+    };
+    req.onsuccess=e=>{idb=e.target.result;res(idb);};
+    req.onerror=e=>rej(e);
+  });
+}
+
+async function saveRecordingIDB(quoteId, blobUrl, date, transcript=''){
+  const db=await openIDB();
+  const resp=await fetch(blobUrl);
+  const blob=await resp.blob();
+  const id=quoteId+'_'+Date.now();
+  return new Promise((res,rej)=>{
+    const tx=db.transaction('recordings','readwrite');
+    tx.objectStore('recordings').put({id,quoteId,blob,date,transcript});
+    tx.oncomplete=()=>res(id);
+    tx.onerror=rej;
+  });
+}
+
+async function getRecordingsIDB(quoteId){
+  const db=await openIDB();
+  return new Promise((res,rej)=>{
+    const tx=db.transaction('recordings','readonly');
+    const req=tx.objectStore('recordings').getAll();
+    req.onsuccess=()=>res(req.result.filter(r=>r.quoteId===quoteId));
+    req.onerror=rej;
+  });
+}
+
+async function deleteRecordingIDB(id){
+  const db=await openIDB();
+  return new Promise((res,rej)=>{
+    const tx=db.transaction('recordings','readwrite');
+    tx.objectStore('recordings').delete(id);
+    tx.oncomplete=res;
+    tx.onerror=rej;
+  });
+}
+
+async function renderRecordingsForQuote(quoteId){
+  const el=document.getElementById('recs-'+quoteId);
+  if(!el)return;
+  const recs=await getRecordingsIDB(quoteId);
+  el.innerHTML=recs.map(r=>{
+    const url=URL.createObjectURL(r.blob);
+    const hasT = r.transcript && r.transcript.trim();
+    // escape for inline onclick attribute
+    const safeT = hasT ? r.transcript.replace(/\\/g,'\\\\').replace(/'/g,"\\'").replace(/\n/g,'\\n') : '';
+    return `<div class="rec-item" id="reci-${r.id}" style="flex-direction:column;align-items:stretch">
+      <div style="display:flex;align-items:center;gap:10px">
+        <div style="flex:1;min-width:0">
+          <audio controls src="${url}" style="width:100%;height:28px"></audio>
+          <div class="rec-date">${r.date}</div>
+        </div>
+        ${hasT?`<span onclick="showRecTranscript(this,'${safeT}')" style="cursor:pointer;font-size:16px;flex-shrink:0;opacity:.75" title="View transcript">📝</span>`:''}
+        <span class="rec-del" onclick="delRecIDB('${r.id}','${quoteId}')">✕</span>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function showRecTranscript(btn, text){
+  const row = btn.closest('.rec-item');
+  const existing = row.querySelector('.rec-transcript-popup');
+  if(existing){ existing.remove(); return; }
+  const popup = document.createElement('div');
+  popup.className = 'rec-transcript-popup';
+  popup.style.cssText = 'margin-top:8px;padding:9px 12px;background:var(--surface);border:1px solid var(--border2);border-radius:8px;font-size:12px;color:var(--text2);white-space:pre-wrap;font-family:Sora,sans-serif;line-height:1.5';
+  popup.textContent = text.replace(/\\n/g,'\n');
+  row.appendChild(popup);
+}
+
+async function delRecIDB(id, quoteId){
+  await deleteRecordingIDB(id);
+  renderRecordingsForQuote(quoteId);
+  toast('Recording deleted');
+}
+
+// Run
+checkLogin();
+openIDB().catch(e=>console.warn('IDB open failed:',e));
+init();
+
+// Register service worker for PWA
+if('serviceWorker' in navigator){
+  const swCode=`
+    self.addEventListener('install',e=>self.skipWaiting());
+    self.addEventListener('activate',e=>{ clients.claim(); });
+    self.addEventListener('fetch',e=>{
+      // Always go to network first; only fall back to cache for non-API requests
+      if(e.request.url.includes('jsonbin.io')){
+        e.respondWith(fetch(e.request));
+      } else {
+        e.respondWith(
+          fetch(e.request, {cache:'no-store'}).catch(()=>caches.match(e.request))
+        );
+      }
+    });
+  `;
+  const blob=new Blob([swCode],{type:'application/javascript'});
+  const url=URL.createObjectURL(blob);
+  navigator.serviceWorker.register(url).catch(()=>{});
+}
+</script>
+</body>
+</html>
