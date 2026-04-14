@@ -1344,23 +1344,25 @@ async function startRecording(id){
       const cloudUrl = await uploadAudioToCloud(blob);
 
       if(cloudUrl){
-        // Replace temp entry with cloud URL
         if(q&&q.recMeta){
           const entry = q.recMeta.find(m=>m.date===date);
           if(entry){ entry.cloudUrl=cloudUrl; entry.tempUrl=''; }
         }
-        save(); // saves recMeta with cloudUrl to localStorage + syncs to cloud
+        // Save locally then push to cloud immediately — block auto-sync for 10s
+        try{ localStorage.setItem('af_q',JSON.stringify(quotes)); }catch(e){}
+        clearTimeout(syncTimer);
+        lastSync = Date.now() + 10000;
+        await cloudSet(getSyncData());
         await renderRecordingsForQuote(id);
         toast('✓ Recording saved & synced');
       } else {
-        // Cloudinary failed — save blob to IDB as fallback
         const blobUrl=URL.createObjectURL(blob);
         await saveRecordingIDB(id, blobUrl, date, transcript||'');
         if(q&&q.recMeta){
           const entry = q.recMeta.find(m=>m.date===date);
-          if(entry) entry.tempUrl='idb'; // mark as IDB-only
+          if(entry) entry.tempUrl='idb';
         }
-        save();
+        try{ localStorage.setItem('af_q',JSON.stringify(quotes)); }catch(e){}
         await renderRecordingsForQuote(id);
         toast('Recording saved locally (no internet)');
       }
