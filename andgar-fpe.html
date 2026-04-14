@@ -632,7 +632,6 @@ function updateSyncBadge(msg){
 }
 
 async function syncFromCloud(){
-  // Create bin first if needed
   if(!binId){ const ok = await ensureBin(); if(!ok) return; }
   updateSyncBadge('⟳ Syncing…');
   const data = await cloudGet();
@@ -640,23 +639,38 @@ async function syncFromCloud(){
 
   const cloudQuotes = data.quotes || [];
   const localQuotes = quotes;
+  let needsPush = false;
 
-  // Merge: use cloud as truth for everything EXCEPT recMeta
-  // recMeta (recordings) are always merged from both sides so nothing is lost
+  // Merge quotes: cloud is truth for all fields, but recMeta is merged (never lost)
   quotes = cloudQuotes.map(cq => {
     const lq = localQuotes.find(x=>x.id===cq.id);
     if(!lq) return cq;
-    // Merge recMeta from both local and cloud — keep all unique entries by date
-    const seen = new Set();
-    const merged = [...(cq.recMeta||[]), ...(lq.recMeta||[])].filter(m=>{
-      if(seen.has(m.date)) return false;
-      seen.add(m.date); return true;
+
+    const cloudMeta = cq.recMeta || [];
+    const localMeta = lq.recMeta || [];
+
+    // Merge by id — use id as unique key (more reliable than date string)
+    const byId = new Map();
+    cloudMeta.forEach(m => byId.set(m.id, m));
+    localMeta.forEach(m => {
+      if(!byId.has(m.id)){
+        byId.set(m.id, m);
+        needsPush = true; // local has something cloud doesn't — push back
+      } else {
+        // Prefer whichever has a cloudUrl
+        const existing = byId.get(m.id);
+        if(!existing.cloudUrl && m.cloudUrl){
+          byId.set(m.id, {...existing, ...m});
+          needsPush = true;
+        }
+      }
     });
+    const merged = Array.from(byId.values());
     return {...cq, recMeta: merged};
   });
 
-  // Also keep any local quotes not in cloud (edge case)
-  localQuotes.forEach(lq=>{
+  // Keep local quotes not in cloud
+  localQuotes.forEach(lq => {
     if(!quotes.find(x=>x.id===lq.id)) quotes.push(lq);
   });
 
@@ -670,8 +684,10 @@ async function syncFromCloud(){
   localStorage.setItem('af_s', JSON.stringify(settings));
   localStorage.setItem('af_i', JSON.stringify(ints));
 
-  // Push merged recMeta back to cloud so both devices stay in sync
-  cloudSet(getSyncData());
+  // If local had recordings cloud didn't know about, push the merged result
+  if(needsPush){
+    await cloudSet(getSyncData());
+  }
 
   updateSyncBadge('✓ Synced');
   renderList(); renderCalendar(); updateIntChips();
@@ -1332,9 +1348,10 @@ async function startRecording(id){
       // Show temp local playback while uploading
       const tempUrl=URL.createObjectURL(blob);
       const q=quotes.find(x=>x.id===id);
+      const recId = 'r'+Date.now(); // stable ID used for both temp and final entry
       if(q){
         if(!q.recMeta)q.recMeta=[];
-        q.recMeta.push({id:'r'+Date.now(), date, transcript:transcript||'', cloudUrl:'', tempUrl});
+        q.recMeta.push({id:recId, date, transcript:transcript||'', cloudUrl:'', tempUrl});
         if(q.recMeta.length>20)q.recMeta=q.recMeta.slice(-20);
       }
       await renderRecordingsForQuote(id);
@@ -1345,7 +1362,7 @@ async function startRecording(id){
 
       if(cloudUrl){
         if(q&&q.recMeta){
-          const entry = q.recMeta.find(m=>m.date===date);
+          const entry = q.recMeta.find(m=>m.id===recId);
           if(entry){ entry.cloudUrl=cloudUrl; entry.tempUrl=''; }
         }
         // Save locally then push to cloud immediately — block auto-sync for 10s
@@ -1514,19 +1531,17 @@ function saveQuote(){
   toast(editingId?'Quote updated':'Quote created');
 }
 
-function deleteQuote(id){
+async function deleteQuote(id){
   if(!confirm('Delete this quote?'))return;
   quotes=quotes.filter(q=>q.id!==id);
   expandedIds.delete(id);
   clearNtfy(id);
-  // Save locally
   try{ localStorage.setItem('af_q',JSON.stringify(quotes)); }catch(e){}
-  // Push to cloud immediately and block sync for 5 seconds so it doesn't restore the quote
+  // Block ALL syncing for 30 seconds and push deletion to cloud
   clearTimeout(syncTimer);
-  lastSync = Date.now() + 5000; // block syncIfNeeded for 5 extra seconds
-  cloudSet(getSyncData()).then(()=>{
-    updateSyncBadge('✓ Synced');
-  });
+  lastSync = Date.now() + 30000;
+  await cloudSet(getSyncData());
+  updateSyncBadge('✓ Synced');
   renderList();
   renderCalendar();
   toast('Deleted');
@@ -2117,8 +2132,23 @@ function showRecTranscript(btn, text){
 }
 
 async function delRecIDB(id, quoteId){
+  // Remove from IDB
   await deleteRecordingIDB(id);
-  renderRecordingsForQuote(quoteId);
+
+  // Remove from recMeta — handle both 'cloud_rXXX' and 'rXXX' formats
+  const q = quotes.find(x=>x.id===quoteId);
+  if(q && q.recMeta){
+    const cleanId = id.startsWith('cloud_') ? id.slice(6) : id;
+    q.recMeta = q.recMeta.filter(m=>m.id!==id && m.id!==cleanId);
+  }
+
+  // Push deletion to cloud immediately, block sync for 15s
+  try{ localStorage.setItem('af_q',JSON.stringify(quotes)); }catch(e){}
+  clearTimeout(syncTimer);
+  lastSync = Date.now() + 15000;
+  await cloudSet(getSyncData());
+
+  await renderRecordingsForQuote(quoteId);
   toast('Recording deleted');
 }
 
