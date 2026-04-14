@@ -534,7 +534,7 @@ const STAGES={open:{label:'Open',cls:'s-open',dot:'#185FA5'},quoted:{label:'Quot
 // ── Persist ────────────────────────────────────────────────────────────────
 // ── Cloud sync (JSONBin) ─────────────────────────────────────────────────
 // ── Cloudinary audio upload ───────────────────────────────────────────────
-const CLOUDINARY_CLOUD = 'du1iw3ixh';
+const CLOUDINARY_CLOUD = 'du2iw3ixh';
 const CLOUDINARY_PRESET = 'ANDGAR';
 
 async function uploadAudioToCloud(blob){
@@ -543,17 +543,15 @@ async function uploadAudioToCloud(blob){
     const ext = blob.type.includes('mp4') ? 'mp4' : 'webm';
     fd.append('file', blob, `recording.${ext}`);
     fd.append('upload_preset', CLOUDINARY_PRESET);
-    fd.append('resource_type', 'video');
-    fd.append('format', 'mp3');
+    // Do NOT send resource_type in URL — let preset handle it
     console.log('Uploading to Cloudinary:', CLOUDINARY_CLOUD, CLOUDINARY_PRESET, blob.type, blob.size);
-    const r = await fetch(`https://api.cloudinary.com/v1_1/${CLOUDINARY_CLOUD}/video/upload`, {
+    const r = await fetch(`https://api.cloudinary.com/v1_1/${CLOUDINARY_CLOUD}/auto/upload`, {
       method:'POST', body:fd
     });
     const j = await r.json();
-    console.log('Cloudinary response:', r.status, JSON.stringify(j).substring(0,200));
+    console.log('Cloudinary response:', r.status, JSON.stringify(j).substring(0,300));
     if(!r.ok) return null;
-    const url = j.secure_url.replace(/\.[^.]+$/, '.mp3');
-    return url;
+    return j.secure_url;
   }catch(e){ console.warn('Cloudinary upload failed:',e); return null; }
 }
 
