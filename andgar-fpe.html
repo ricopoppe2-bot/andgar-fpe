@@ -635,6 +635,7 @@ let lastSync = 0;
 async function syncIfNeeded(){
   if(!currentUser) return;
   const now = Date.now();
+  if(now < lastSync) return; // locked (e.g. after a delete)
   if(now - lastSync < 3000) return; // throttle: max once per 3 seconds
   lastSync = now;
   await syncFromCloud();
@@ -1458,11 +1459,14 @@ function deleteQuote(id){
   quotes=quotes.filter(q=>q.id!==id);
   expandedIds.delete(id);
   clearNtfy(id);
-  // Save locally and push to cloud immediately (no debounce) so sync doesn't restore it
+  // Save locally
   try{ localStorage.setItem('af_q',JSON.stringify(quotes)); }catch(e){}
+  // Push to cloud immediately and block sync for 5 seconds so it doesn't restore the quote
   clearTimeout(syncTimer);
-  cloudSet(getSyncData());
-  updateSyncBadge('✓ Synced');
+  lastSync = Date.now() + 5000; // block syncIfNeeded for 5 extra seconds
+  cloudSet(getSyncData()).then(()=>{
+    updateSyncBadge('✓ Synced');
+  });
   renderList();
   renderCalendar();
   toast('Deleted');
