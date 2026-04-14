@@ -615,18 +615,17 @@ async function syncFromCloud(){
   updateSyncBadge('⟳ Syncing…');
   const data = await cloudGet();
   if(!data){ updateSyncBadge('No cloud data yet'); return; }
-  if((data.quotes||[]).length || Object.keys(data.settings||{}).length){
-    quotes = data.quotes || quotes;
-    if(data.settings) settings = {...settings, ...data.settings};
-    if(data.ints) ints = data.ints;
-    if(data.passes){
-      localStorage.setItem('af_passes', JSON.stringify(data.passes));
-      Object.assign(USERS, data.passes);
-    }
-    localStorage.setItem('af_q', JSON.stringify(quotes));
-    localStorage.setItem('af_s', JSON.stringify(settings));
-    localStorage.setItem('af_i', JSON.stringify(ints));
+  // Always trust cloud as source of truth (includes deletions)
+  quotes = data.quotes || quotes;
+  if(data.settings) settings = {...settings, ...data.settings};
+  if(data.ints) ints = data.ints;
+  if(data.passes){
+    localStorage.setItem('af_passes', JSON.stringify(data.passes));
+    Object.assign(USERS, data.passes);
   }
+  localStorage.setItem('af_q', JSON.stringify(quotes));
+  localStorage.setItem('af_s', JSON.stringify(settings));
+  localStorage.setItem('af_i', JSON.stringify(ints));
   updateSyncBadge('✓ Synced');
   renderList(); renderCalendar(); updateIntChips();
 }
@@ -1456,7 +1455,17 @@ function saveQuote(){
 
 function deleteQuote(id){
   if(!confirm('Delete this quote?'))return;
-  quotes=quotes.filter(q=>q.id!==id);expandedIds.delete(id);clearNtfy(id);save();renderList();renderCalendar();toast('Deleted');
+  quotes=quotes.filter(q=>q.id!==id);
+  expandedIds.delete(id);
+  clearNtfy(id);
+  // Save locally and push to cloud immediately (no debounce) so sync doesn't restore it
+  try{ localStorage.setItem('af_q',JSON.stringify(quotes)); }catch(e){}
+  clearTimeout(syncTimer);
+  cloudSet(getSyncData());
+  updateSyncBadge('✓ Synced');
+  renderList();
+  renderCalendar();
+  toast('Deleted');
 }
 
 function closeModal(){document.getElementById('modal-overlay').style.display='none';hideModalPeoplePicker();}
