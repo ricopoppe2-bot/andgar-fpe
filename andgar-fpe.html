@@ -651,11 +651,32 @@ async function syncFromCloud(){
   const cloudTs = data.ts || 0;
   const localTs = parseInt(localStorage.getItem('af_last_save')||'0');
 
-  // If local is newer than cloud, push local to cloud instead of pulling
-  if(localTs > cloudTs && localTs > 0){
-    updateSyncBadge('⟳ Pushing local changes…');
-    await cloudSet(getSyncData());
+  // If local is newer OR equal to cloud, push local up instead of pulling down
+  // This prevents cloud from overwriting recent local saves (recordings, edits)
+  if(localTs >= cloudTs && localTs > 0){
     updateSyncBadge('✓ Synced');
+    // Still merge recMeta in case other device added recordings
+    const cloudQuotes = data.quotes || [];
+    let needsPush = false;
+    quotes = quotes.map(lq => {
+      const cq = cloudQuotes.find(x=>x.id===lq.id);
+      if(!cq) return lq;
+      const cloudMeta = cq.recMeta || [];
+      const localMeta = lq.recMeta || [];
+      const byId = new Map();
+      localMeta.forEach(m => byId.set(m.id, m));
+      const deletedRecs = JSON.parse(localStorage.getItem('af_deleted_recs')||'[]');
+      cloudMeta.forEach(m => {
+        if(deletedRecs.includes(m.id)) return;
+        if(!byId.has(m.id)){ byId.set(m.id, m); needsPush = true; }
+      });
+      return {...lq, recMeta: Array.from(byId.values())};
+    });
+    if(needsPush){
+      localStorage.setItem('af_q', JSON.stringify(quotes));
+      await cloudSet(getSyncData());
+    }
+    renderList(); renderCalendar(); updateIntChips();
     return;
   }
 
