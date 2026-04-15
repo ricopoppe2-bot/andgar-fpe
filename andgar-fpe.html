@@ -762,7 +762,20 @@ async function syncIfNeeded(){
   lastSync = now;
   await syncFromCloud();
 }
-document.addEventListener('visibilitychange', ()=>{ if(document.visibilityState==='visible') syncIfNeeded(); });
+document.addEventListener('visibilitychange', ()=>{ 
+  if(document.visibilityState==='visible'){
+    const now = Date.now();
+    const localTs = parseInt(localStorage.getItem('af_last_save')||'0');
+    // Only pull from cloud on tab switch if it's been 5+ minutes since last local save
+    // This prevents tab switching from wiping out recent recordings
+    if(now - localTs > 5 * 60 * 1000){
+      syncIfNeeded();
+    } else {
+      // Just push local state to cloud to keep it fresh
+      if(currentUser) cloudSet(getSyncData());
+    }
+  }
+});
 window.addEventListener('focus', syncIfNeeded);
 window.addEventListener('pageshow', syncIfNeeded); // iOS Safari tab restore
 // Auto-sync every 60 seconds
