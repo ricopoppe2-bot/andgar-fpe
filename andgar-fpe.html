@@ -344,6 +344,7 @@ body{font-family:'Sora',sans-serif;background:var(--bg);color:var(--text);min-he
     </div>
   </div>
   <div class="header-btns">
+    <button class="icon-btn" onclick="toggleDashboard()">📊 Dashboard</button>
     <button class="icon-btn" onclick="toggleCal()">
       <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><rect x="1" y="2.5" width="14" height="12" rx="2"/><line x1="5" y1="1" x2="5" y2="4"/><line x1="11" y1="1" x2="11" y2="4"/><line x1="1" y1="6.5" x2="15" y2="6.5"/></svg>
       Calendar
@@ -374,7 +375,7 @@ body{font-family:'Sora',sans-serif;background:var(--bg);color:var(--text);min-he
   </div>
   <div class="stat-card"><div class="stat-label">Total</div><div class="stat-value" id="stat-total">0</div></div>
   <div class="stat-card"><div class="stat-label">High priority</div><div class="stat-value"><span class="stat-dot" style="background:#E24B4A"></span><span id="stat-red">0</span></div></div>
-  <div class="stat-card"><div class="stat-label">Accepted</div><div class="stat-value" id="stat-acc">0</div></div>
+  <div class="stat-card"><div class="stat-label">Completed this month</div><div class="stat-value" id="stat-acc">0</div></div>
   <div class="stat-card"><div class="stat-label">New this month</div><div class="stat-value" id="stat-new">0</div></div>
 </div>
 
@@ -394,10 +395,10 @@ body{font-family:'Sora',sans-serif;background:var(--bg);color:var(--text);min-he
       <div class="sfd-opt" onclick="setStageFilter('')">All stages</div>
       <div class="sfd-opt" onclick="setStageFilter('open')"><span class="sfd-dot" style="background:#185FA5"></span>Open</div>
       <div class="sfd-opt" onclick="setStageFilter('quoted')"><span class="sfd-dot" style="background:#854F0B"></span>Quoted</div>
-      <div class="sfd-opt" onclick="setStageFilter('accepted')"><span class="sfd-dot" style="background:#3B6D11"></span>Accepted</div>
       <div class="sfd-opt" onclick="setStageFilter('design')"><span class="sfd-dot" style="background:#3C3489"></span>Design</div>
       <div class="sfd-opt" onclick="setStageFilter('operations')"><span class="sfd-dot" style="background:#0F6E56"></span>Operations</div>
       <div class="sfd-opt" onclick="setStageFilter('install')"><span class="sfd-dot" style="background:#e65100"></span>Install</div>
+      <div class="sfd-opt" onclick="setStageFilter('completed')"><span class="sfd-dot" style="background:#3B6D11"></span>Completed</div>
       <div class="sfd-opt" onclick="setStageFilter('declined')"><span class="sfd-dot" style="background:#A32D2D"></span>Declined</div>
       <div class="sfd-opt" onclick="setStageFilter('closed')"><span class="sfd-dot" style="background:#555"></span>Closed</div>
     </div>
@@ -405,6 +406,17 @@ body{font-family:'Sora',sans-serif;background:var(--bg);color:var(--text);min-he
 </div>
 
 <div class="quote-list" id="quote-list"></div>
+</div>
+
+<!-- Dashboard overlay -->
+<div class="cal-overlay" id="dash-overlay" style="display:none" onclick="if(event.target===this)toggleDashboard()">
+  <div class="cal-panel" style="max-width:820px;width:95%" onclick="event.stopPropagation()">
+    <div class="cal-header">
+      <div style="font-size:16px;font-weight:700;font-family:'Oswald',sans-serif;letter-spacing:1px">📊 DASHBOARD</div>
+      <button class="icon-btn" onclick="toggleDashboard()">✕ Close</button>
+    </div>
+    <div id="dash-body" style="padding:20px;overflow-y:auto;max-height:80vh"></div>
+  </div>
 </div>
 
 <!-- Calendar panel -->
@@ -443,8 +455,12 @@ body{font-family:'Sora',sans-serif;background:var(--bg);color:var(--text);min-he
 </div>
       <div class="ff"><label class="flabel">Quote number *</label><input class="finput" id="f-number" placeholder="e.g. Q-2025-042"/></div>
     </div>
+    <div class="ff"><label class="flabel">Line Items (Labour, Materials, Fees etc.)</label>
+      <div id="line-items-container" style="display:flex;flex-direction:column;gap:6px;margin-bottom:6px"></div>
+      <button class="abtn" type="button" onclick="addLineItem()" style="width:100%;justify-content:center">+ Add line item</button>
+    </div>
     <div class="modal-2col">
-      <div class="ff"><label class="flabel">Amount ($)</label><input class="finput" id="f-amount" type="number" placeholder="0.00"/></div>
+      <div class="ff"><label class="flabel">Total Amount ($)</label><input class="finput" id="f-amount" type="number" placeholder="0.00 (or add line items above)" style="font-weight:600"/></div>
       <div class="ff"><label class="flabel">Keyword / tag</label><input class="finput" id="f-keyword" placeholder="e.g. HVAC, Sprinkler"/></div>
     </div>
     <div class="ff"><label class="flabel">Description / scope</label><input class="finput" id="f-desc" placeholder="Brief description of work"/></div>
@@ -529,7 +545,7 @@ let calYear, calMonth, calSelectedDate=null;
 let activeDropdown=null;
 const NOW=new Date(), TM=NOW.getMonth(), TY=NOW.getFullYear();
 const MONTHS=['January','February','March','April','May','June','July','August','September','October','November','December'];
-const STAGES={open:{label:'Open',cls:'s-open',dot:'#185FA5'},quoted:{label:'Quoted',cls:'s-sent',dot:'#854F0B'},accepted:{label:'Accepted',cls:'s-accepted',dot:'#3B6D11'},design:{label:'Design',cls:'s-design',dot:'#3C3489'},operations:{label:'Operations',cls:'s-operations',dot:'#0F6E56'},install:{label:'Install',cls:'s-install',dot:'#e65100'},declined:{label:'Declined',cls:'s-declined',dot:'#A32D2D'},closed:{label:'Closed',cls:'s-closed',dot:'#555'}};
+const STAGES={open:{label:'Open',cls:'s-open',dot:'#185FA5'},quoted:{label:'Quoted',cls:'s-sent',dot:'#854F0B'},design:{label:'Design',cls:'s-design',dot:'#3C3489'},operations:{label:'Operations',cls:'s-operations',dot:'#0F6E56'},install:{label:'Install',cls:'s-install',dot:'#e65100'},completed:{label:'Completed',cls:'s-accepted',dot:'#3B6D11'},declined:{label:'Declined',cls:'s-declined',dot:'#A32D2D'},closed:{label:'Closed',cls:'s-closed',dot:'#555'}};
 
 // ── Persist ────────────────────────────────────────────────────────────────
 // ── Cloud sync (JSONBin) ─────────────────────────────────────────────────
@@ -843,15 +859,20 @@ function updateIntChips(){['excel','notion','gmail','sms','cal'].forEach(k=>{con
 
 // ── Stats ──────────────────────────────────────────────────────────────────
 function updateStats(){
-  const ip=quotes.filter(q=>!['accepted','declined'].includes(q.status));
-  document.getElementById('stat-total').textContent=quotes.length;
-  document.getElementById('stat-red').textContent=quotes.filter(q=>q.priority==='red').length;
+  const hiddenStages = ['completed','declined','closed'];
+  const ip=quotes.filter(q=>!hiddenStages.includes(q.status));
+  document.getElementById('stat-total').textContent=quotes.length; // all quotes including completed/declined/closed
+  document.getElementById('stat-red').textContent=ip.filter(q=>q.priority==='red').length;
   document.getElementById('stat-open').textContent=ip.length;
-  document.getElementById('stat-acc').textContent=quotes.filter(q=>q.status==='accepted').length;
+  // Completed this month = quotes with endDate in current month
+  const compMonth=quotes.filter(q=>{if(!q.endDate)return false;const d=new Date(q.endDate+'T00:00:00');return d.getMonth()===TM&&d.getFullYear()===TY;}).length;
+  document.getElementById('stat-acc').textContent=compMonth;
   const nm=quotes.filter(q=>{if(!q.created)return false;const d=new Date(q.created+'T00:00:00');return d.getMonth()===TM&&d.getFullYear()===TY;}).length;
   document.getElementById('stat-new').textContent=nm;
   const hc=document.getElementById('hero-clients');
-  const show=ip.slice(0,3),extra=ip.length-show.length;
+  // Sort ip same as renderList for consistent display
+  const ipSorted=[...ip].sort((a,b)=>(({red:0,orange:1,yellow:2,'':3})[a.priority||'']||3)-((({red:0,orange:1,yellow:2,'':3})[b.priority||'']||3)));
+  const show=ipSorted.slice(0,3),extra=ip.length-show.length;
   hc.innerHTML=show.map(q=>`<div class="hero-row"><div class="hero-av">${ini(q.client)}</div><div class="hero-name">${q.client}</div><div class="hero-num">${q.number}</div></div>`).join('')+(extra>0?`<div style="font-size:10px;color:var(--text3);font-family:'DM Mono',monospace;margin-top:2px">+${extra} more</div>`:'');
   document.getElementById('hero-month').textContent=(MONTHS[TM]+' '+TY).toUpperCase();
 }
@@ -859,12 +880,31 @@ function updateStats(){
 // ── Render list ────────────────────────────────────────────────────────────
 function renderList(){
   const q=(document.getElementById('search').value||'').toLowerCase();
+  const hiddenStages=['completed','declined','closed'];
+  const stageOrder={open:0,quoted:1,design:2,operations:3,install:4,completed:5,declined:6,closed:7};
+  const priorityOrder={red:0,orange:1,yellow:2,'':3};
+  const twoHoursAgo = Date.now() - 2*60*60*1000;
+
   const filtered=quotes.filter(x=>{
-    const ms=!q||x.client.toLowerCase().includes(q)||x.number.toLowerCase().includes(q)||(x.keyword||'').toLowerCase().includes(q);
-    const mf=activeFilter==='all'||x.priority===activeFilter||(activeFilter==='accepted'&&x.status==='accepted');
+    const ms=!q||x.client.toLowerCase().includes(q)||x.number.toLowerCase().includes(q)||(x.keyword||'').toLowerCase().includes(q)||(x.desc||'').toLowerCase().includes(q);
+    const mf=activeFilter==='all'||x.priority===activeFilter;
     const sf=!activeStageFilter||x.status===activeStageFilter;
-    return ms&&mf&&sf;
+    // Hide completed/declined/closed from main list UNLESS searching or stage filter selected
+    const hidden=hiddenStages.includes(x.status)&&!q&&!activeStageFilter;
+    return ms&&mf&&sf&&!hidden;
   });
+
+  // Sort: priority first (red>orange>yellow>none), then stage order, then recently modified
+  filtered.sort((a,b)=>{
+    const pa=priorityOrder[a.priority||'']??3, pb=priorityOrder[b.priority||'']??3;
+    if(pa!==pb) return pa-pb;
+    const sa=stageOrder[a.status]??99, sb=stageOrder[b.status]??99;
+    if(sa!==sb) return sa-sb;
+    // Recently created/modified (within 2 hours) float up
+    const at=new Date(a.created||0).getTime(), bt=new Date(b.created||0).getTime();
+    return bt-at;
+  });
+
   const list=document.getElementById('quote-list');
   list.innerHTML='';
   if(!filtered.length){list.innerHTML='<div class="empty-state">No quotes found</div>';}
@@ -1456,6 +1496,112 @@ function stopRecording(id){
 // ── Priority ───────────────────────────────────────────────────────────────
 
 // ── Calendar ───────────────────────────────────────────────────────────────
+// ── Dashboard ──────────────────────────────────────────────────────────────
+function toggleDashboard(){
+  const o=document.getElementById('dash-overlay');
+  const visible=o.style.display==='flex';
+  o.style.display=visible?'none':'flex';
+  if(!visible) renderDashboard();
+}
+
+function renderDashboard(){
+  const body=document.getElementById('dash-body');
+  const hiddenStages=['completed','declined','closed'];
+  const activeQ=quotes.filter(q=>!hiddenStages.includes(q.status));
+  const completedQ=quotes.filter(q=>q.status==='completed');
+  const declinedQ=quotes.filter(q=>q.status==='declined');
+  const now=new Date();
+  const thisMonth=q=>{if(!q.created)return false;const d=new Date(q.created+'T00:00:00');return d.getMonth()===now.getMonth()&&d.getFullYear()===now.getFullYear();};
+  const endThisMonth=q=>{if(!q.endDate)return false;const d=new Date(q.endDate+'T00:00:00');return d.getMonth()===now.getMonth()&&d.getFullYear()===now.getFullYear();};
+  const totalVal=activeQ.reduce((s,q)=>s+Number(q.amount||0),0);
+  const completedVal=completedQ.reduce((s,q)=>s+Number(q.amount||0),0);
+  const winRate=completedQ.length+declinedQ.length?Math.round(completedQ.length/(completedQ.length+declinedQ.length)*100):0;
+  const avgVal=activeQ.length?Math.round(totalVal/activeQ.length):0;
+  const newThisMonth=quotes.filter(thisMonth).length;
+  const completedThisMonth=quotes.filter(endThisMonth).length;
+  const completedValMonth=quotes.filter(endThisMonth).reduce((s,q)=>s+Number(q.amount||0),0);
+  const stageOrder=['open','quoted','design','operations','install'];
+  const stageCounts=stageOrder.map(s=>({stage:s,label:STAGES[s]?.label||s,dot:STAGES[s]?.dot||'#888',count:activeQ.filter(q=>q.status===s).length,val:activeQ.filter(q=>q.status===s).reduce((s,q)=>s+Number(q.amount||0),0)}));
+  const highPri=activeQ.filter(q=>q.priority==='red');
+  const medPri=activeQ.filter(q=>q.priority==='orange');
+  const clientMap={};
+  quotes.forEach(q=>{if(!clientMap[q.client])clientMap[q.client]={count:0,val:0};clientMap[q.client].count++;clientMap[q.client].val+=Number(q.amount||0);});
+  const topClients=Object.entries(clientMap).sort((a,b)=>b[1].val-a[1].val).slice(0,5);
+  const overdue=activeQ.filter(q=>q.endDate&&new Date(q.endDate+'T00:00:00')<now);
+  const fmt=v=>'$'+Number(v).toLocaleString('en-CA',{minimumFractionDigits:0,maximumFractionDigits:0});
+  const card=(label,val,sub,color='var(--text)')=>`<div style="background:var(--surface2);border:1px solid var(--border);border-radius:12px;padding:16px 18px"><div style="font-size:10px;font-family:'DM Mono',monospace;color:var(--text3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px">${label}</div><div style="font-size:22px;font-weight:700;color:${color}">${val}</div>${sub?`<div style="font-size:11px;color:var(--text3);margin-top:2px">${sub}</div>`:''}</div>`;
+  const sec=t=>`<div style="font-size:10px;font-family:'DM Mono',monospace;color:var(--text3);text-transform:uppercase;letter-spacing:.8px;margin:20px 0 8px;padding-bottom:6px;border-bottom:1px solid var(--border)">${t}</div>`;
+  body.innerHTML=`
+    ${sec('Pipeline Overview')}
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:10px">
+      ${card('Active Quotes',activeQ.length,'in progress')}
+      ${card('Pipeline Value',fmt(totalVal),'total active')}
+      ${card('Avg Quote',fmt(avgVal),'per active quote')}
+      ${card('Win Rate',winRate+'%',completedQ.length+' won / '+declinedQ.length+' lost','var(--green-txt)')}
+    </div>
+    ${sec('This Month — '+MONTHS[now.getMonth()]+' '+now.getFullYear())}
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:10px">
+      ${card('New Quotes',newThisMonth,'created')}
+      ${card('Completed',completedThisMonth,'finished')}
+      ${card('Revenue',fmt(completedValMonth),'from completed','var(--green-txt)')}
+      ${card('Overdue',overdue.length,'past end date',overdue.length?'var(--red-txt)':'var(--text)')}
+    </div>
+    ${sec('Pipeline by Stage')}
+    <div style="background:var(--surface2);border:1px solid var(--border);border-radius:12px;overflow:hidden">
+      ${stageCounts.map((s,i)=>`<div style="display:flex;align-items:center;gap:12px;padding:11px 16px;${i>0?'border-top:1px solid var(--border)':''}"><span style="width:10px;height:10px;border-radius:50%;background:${s.dot};flex-shrink:0"></span><span style="flex:1;font-size:13px">${s.label}</span><span style="font-size:12px;color:var(--text3);font-family:'DM Mono',monospace">${s.count} quote${s.count!==1?'s':''}</span><span style="font-size:13px;font-weight:600;min-width:80px;text-align:right">${fmt(s.val)}</span></div>`).join('')}
+    </div>
+    ${highPri.length||medPri.length?sec('Priority Alerts'):''}
+    ${highPri.map(q=>`<div style="display:flex;align-items:center;gap:10px;padding:10px 14px;background:var(--red-bg);border-radius:9px;border:1px solid var(--red-txt);margin-bottom:6px"><span>🔴</span><span style="flex:1;font-size:13px;font-weight:500">${q.client}</span><span style="font-size:12px;color:var(--text3)">${q.number}</span><span style="font-weight:600">${fmt(q.amount||0)}</span></div>`).join('')}
+    ${medPri.map(q=>`<div style="display:flex;align-items:center;gap:10px;padding:10px 14px;background:var(--amber-bg);border-radius:9px;margin-bottom:6px"><span>🟠</span><span style="flex:1;font-size:13px;font-weight:500">${q.client}</span><span style="font-size:12px;color:var(--text3)">${q.number}</span><span style="font-weight:600">${fmt(q.amount||0)}</span></div>`).join('')}
+    ${overdue.length?sec('Overdue'):''}
+    ${overdue.map(q=>`<div style="display:flex;align-items:center;gap:10px;padding:10px 14px;background:var(--surface2);border-radius:9px;border:1px solid var(--red-txt);margin-bottom:6px"><span>⚠️</span><span style="flex:1;font-size:13px;font-weight:500">${q.client}</span><span style="font-size:12px;color:var(--red-txt);font-family:'DM Mono',monospace">Due ${fmtDate(q.endDate)}</span><span style="font-weight:600">${fmt(q.amount||0)}</span></div>`).join('')}
+    ${sec('Top Clients')}
+    <div style="background:var(--surface2);border:1px solid var(--border);border-radius:12px;overflow:hidden">
+      ${topClients.map(([name,data],i)=>`<div style="display:flex;align-items:center;gap:12px;padding:11px 16px;${i>0?'border-top:1px solid var(--border)':''}"><div style="width:28px;height:28px;border-radius:50%;background:var(--surface);border:1px solid var(--border2);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0">${name.charAt(0).toUpperCase()}</div><span style="flex:1;font-size:13px;font-weight:500">${name}</span><span style="font-size:12px;color:var(--text3);font-family:'DM Mono',monospace">${data.count} quote${data.count!==1?'s':''}</span><span style="font-weight:600">${fmt(data.val)}</span></div>`).join('')}
+    </div>
+  `;
+}
+
+// ── Line Items ─────────────────────────────────────────────────────────────
+function addLineItem(desc='',amt=''){
+  const container=document.getElementById('line-items-container');
+  if(!container)return;
+  const div=document.createElement('div');
+  div.className='line-item-row';
+  div.style.cssText='display:flex;gap:6px;align-items:center;margin-bottom:4px';
+  div.innerHTML=`<input class="finput" placeholder="e.g. Labour, Materials" value="${desc}" style="flex:2" oninput="recalcTotal()"/><input class="finput" type="number" placeholder="$0" value="${amt}" style="flex:1;min-width:80px" oninput="recalcTotal()"/><button class="abtn" type="button" onclick="this.parentElement.remove();recalcTotal()" style="padding:6px 10px;flex-shrink:0">✕</button>`;
+  container.appendChild(div);
+  recalcTotal();
+}
+
+function recalcTotal(){
+  const rows=document.querySelectorAll('.line-item-row');
+  let total=0;
+  rows.forEach(r=>{const v=parseFloat(r.querySelectorAll('input')[1].value)||0;total+=v;});
+  const el=document.getElementById('f-amount');
+  if(el)el.value=total>0?total:'';
+}
+
+function getLineItems(){
+  const rows=document.querySelectorAll('.line-item-row');
+  const items=[];
+  rows.forEach(r=>{
+    const inputs=r.querySelectorAll('input');
+    const desc=inputs[0].value.trim();
+    const amt=parseFloat(inputs[1].value)||0;
+    if(desc||amt)items.push({desc,amt});
+  });
+  return items;
+}
+
+function setLineItems(items){
+  const container=document.getElementById('line-items-container');
+  if(!container)return;
+  container.innerHTML='';
+  (items||[]).forEach(it=>addLineItem(it.desc,it.amt));
+  if(!items||!items.length) recalcTotal();
+}
+
 function toggleCal(){
   const o=document.getElementById('cal-overlay');
   o.style.display=o.style.display==='none'?'flex':'none';
@@ -1507,14 +1653,26 @@ function renderCalendar(){
   }
   document.getElementById('cal-cells').innerHTML=html;
 
-  // Events list for selected date or today
-  const showDate=calSelectedDate||todayStr;
-  const showEvs=evMap[showDate]||[];
+  // Events list — show ALL events for the month, grouped by date
+  // Highlight selected day's events at top if a day is selected
   const el=document.getElementById('cal-events-list');
-  if(!showEvs.length){
-    el.innerHTML=`<div style="font-size:12px;color:var(--text3);padding:8px 0;font-family:'DM Mono',monospace">${fmtDate(showDate)} — no events</div>`;
+  const allDates=Object.keys(evMap).filter(d=>d.startsWith(`${calYear}-${String(calMonth+1).padStart(2,'0')}`)).sort();
+  
+  if(!allDates.length){
+    el.innerHTML=`<div style="font-size:12px;color:var(--text3);padding:8px 0;font-family:'DM Mono',monospace">No events this month</div>`;
   } else {
-    el.innerHTML=`<div class="cal-events-section-label">${fmtDate(showDate)}</div>`+showEvs.map(e=>`<div class="cal-event-item"><div class="cal-event-bar" style="background:${e.color}"></div><div><div class="cal-event-name">${e.label}</div><div class="cal-event-sub">${e.sub||''}</div></div></div>`).join('');
+    // If a day is selected, show it first
+    const orderedDates = calSelectedDate && evMap[calSelectedDate]
+      ? [calSelectedDate, ...allDates.filter(d=>d!==calSelectedDate)]
+      : allDates;
+    
+    el.innerHTML = orderedDates.map(date=>{
+      const dayEvs = evMap[date]||[];
+      if(!dayEvs.length) return '';
+      const isSelected = date===calSelectedDate;
+      return `<div class="cal-events-section-label" style="${isSelected?'color:var(--blue-txt)':''}">${fmtDate(date)}</div>`+
+        dayEvs.map(e=>`<div class="cal-event-item" style="${isSelected?'border:1px solid var(--border2)':''}"><div class="cal-event-bar" style="background:${e.color}"></div><div><div class="cal-event-name">${e.label}</div><div class="cal-event-sub">${e.sub||''}</div></div></div>`).join('');
+    }).join('');
   }
 }
 
@@ -1526,6 +1684,7 @@ function openNewModal(){
   document.getElementById('modal-title').textContent='New quote';
   ['client','number','amount','keyword','desc','designurl'].forEach(f=>{const el=document.getElementById('f-'+f);if(el)el.value='';});
   document.getElementById('f-status').value='open';
+  setLineItems([]);
   // contacts managed via expanded card
   document.getElementById('f-start').value='';
   document.getElementById('f-end').value='';
@@ -1546,6 +1705,7 @@ function editQuote(id){
   // contacts managed via expanded card
   document.getElementById('f-start').value=q.startDate||'';
   document.getElementById('f-end').value=q.endDate||'';
+  setLineItems(q.lineItems||[]);
   document.getElementById('modal-overlay').style.display='flex';
 }
 
@@ -1558,6 +1718,7 @@ function saveQuote(){
   const data={
     client,number,
     amount:document.getElementById('f-amount').value,
+    lineItems:getLineItems(),
     keyword:document.getElementById('f-keyword').value.trim().toUpperCase(),
     desc:document.getElementById('f-desc').value.trim(),
     designUrl:(()=>{let u=document.getElementById('f-designurl').value.trim();if(u&&!u.match(/^https?:\/\//))u='https://'+u;return u;})(),
@@ -1717,34 +1878,39 @@ function generatePDF(id){
   }
 
   // ── Line items table ──────────────────────────────────────────────────
+  const lineItems = q.lineItems && q.lineItems.length ? q.lineItems : [{desc: q.desc||'Professional Services', amt: Number(q.amount||0)}];
+  const fmtMoney = v => '$'+Number(v||0).toLocaleString('en-CA',{minimumFractionDigits:2});
+  const subtotal = lineItems.reduce((s,it)=>s+Number(it.amt||0),0);
+
   // Table header
   doc.setFillColor(...navy); doc.rect(M, y, RW, 9, 'F');
   doc.setFont('helvetica','bold'); doc.setFontSize(9); doc.setTextColor(255,255,255);
-  doc.text('ITEM DESCRIPTION', M+4, y+6);
-  doc.text('QTY', M+RW*0.62, y+6, {align:'center'});
-  doc.text('UNIT', M+RW*0.76, y+6, {align:'center'});
+  doc.text('DESCRIPTION', M+4, y+6);
   doc.text('AMOUNT', M+RW-4, y+6, {align:'right'});
   y+=9;
 
-  // Single line item row
-  doc.setFillColor(255,255,255); doc.rect(M, y, RW, 14, 'F');
-  doc.setDrawColor(...mid); doc.setLineWidth(0.2); doc.rect(M, y, RW, 14, 'S');
-  doc.setFont('helvetica','normal'); doc.setFontSize(10); doc.setTextColor(...dark);
-  const desc=(q.desc||'Professional Services').substring(0,55);
-  doc.text(desc, M+4, y+9);
-  doc.text('1', M+RW*0.62, y+9, {align:'center'});
-  doc.text('Lump Sum', M+RW*0.76, y+9, {align:'center'});
-  doc.setFont('helvetica','bold');
-  doc.text('$'+Number(q.amount||0).toLocaleString('en-CA',{minimumFractionDigits:2}), M+RW-4, y+9, {align:'right'});
-  y+=14;
+  // Line item rows
+  lineItems.forEach((it,i)=>{
+    const rowH=12;
+    doc.setFillColor(i%2===0?255:248,i%2===0?255:248,i%2===0?255:248);
+    doc.rect(M, y, RW, rowH, 'F');
+    doc.setDrawColor(...mid); doc.setLineWidth(0.15);
+    doc.line(M, y+rowH, M+RW, y+rowH);
+    doc.setFont('helvetica','normal'); doc.setFontSize(10); doc.setTextColor(...dark);
+    const label=String(it.desc||'').substring(0,70);
+    doc.text(label, M+4, y+8);
+    doc.setFont('helvetica','bold');
+    doc.text(fmtMoney(it.amt), M+RW-4, y+8, {align:'right'});
+    y+=rowH;
+  });
+  y+=4;
 
   // Subtotal rows
-  const subtotalY = y;
   doc.setFillColor(...light); doc.rect(M+RW*0.55, y, RW*0.45, 8, 'F');
   doc.setFont('helvetica','normal'); doc.setFontSize(9); doc.setTextColor(...grey);
   doc.text('Subtotal', M+RW*0.57, y+5.5);
   doc.setTextColor(...dark);
-  doc.text('$'+Number(q.amount||0).toLocaleString('en-CA',{minimumFractionDigits:2}), M+RW-4, y+5.5, {align:'right'});
+  doc.text(fmtMoney(subtotal), M+RW-4, y+5.5, {align:'right'});
   y+=8;
 
   doc.setFillColor(...light); doc.rect(M+RW*0.55, y, RW*0.45, 8, 'F');
@@ -1758,7 +1924,7 @@ function generatePDF(id){
   doc.setFont('helvetica','bold'); doc.setFontSize(11); doc.setTextColor(255,255,255);
   doc.text('TOTAL', M+RW*0.57, y+7.5);
   doc.setTextColor(...green);
-  doc.text('$'+Number(q.amount||0).toLocaleString('en-CA',{minimumFractionDigits:2}), M+RW-4, y+7.5, {align:'right'});
+  doc.text(fmtMoney(subtotal), M+RW-4, y+7.5, {align:'right'});
   y+=20;
 
   // ── Notes ─────────────────────────────────────────────────────────────
@@ -2080,7 +2246,7 @@ function showRecTranscript(btn, text){
   if(existing){ existing.remove(); return; }
   const popup = document.createElement('div');
   popup.className = 'rec-transcript-popup';
-  popup.style.cssText = 'margin-top:8px;padding:9px 12px;background:var(--surface);border:1px solid var(--border2);border-radius:8px;font-size:12px;color:var(--text2);white-space:pre-wrap;font-family:Sora,sans-serif;line-height:1.5';
+  popup.style.cssText = 'margin-top:8px;padding:9px 12px;background:var(--surface);border:1px solid var(--border2);border-radius:8px;font-size:12px;color:var(--text2);white-space:pre-wrap;word-break:break-word;overflow-wrap:break-word;max-width:100%;font-family:Sora,sans-serif;line-height:1.5';
   popup.textContent = text.replace(/\\n/g,'\n');
   row.appendChild(popup);
 }
