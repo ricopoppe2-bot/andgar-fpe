@@ -677,6 +677,7 @@ async function syncFromCloud(){
       await cloudSet(getSyncData());
     }
     renderList(); renderCalendar(); updateIntChips();
+    expandedIds.forEach(id => renderRecordingsForQuote(id));
     return;
   }
 
@@ -743,6 +744,8 @@ async function syncFromCloud(){
 
   updateSyncBadge('✓ Synced');
   renderList(); renderCalendar(); updateIntChips();
+  // Re-render recordings for any expanded quotes so they don't disappear after sync
+  expandedIds.forEach(id => renderRecordingsForQuote(id));
 }
 
 // Re-sync every time app becomes visible — tab click, app switch, phone wake
@@ -1345,140 +1348,110 @@ function schedNotes(id,val){
   notesTimers[id]=setTimeout(()=>{const q=quotes.find(x=>x.id===id);if(q){q.notes=val;save();}},600);
 }
 
-// ── Voice recording ────────────────────────────────────────────────────────
-let activeRecorders={};
-// ── Transcript (Web Speech API) auto-runs during recording ───────────────
+// ── Voice recording ──────────────────────────────────────────────────────
+let activeRecorders = {};
 const activeTranscripts = {};
 
 function toggleRecording(id){
-  if(activeRecorders[id]){ stopRecording(id); }
-  else { startRecording(id); }
+  if(activeRecorders[id]) stopRecording(id);
+  else startRecording(id);
 }
 
 function startTranscript(id){
-  const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-  if(!SpeechRecognition) return;
+  const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+  if(!SR) return;
   try{
-    const recog = new SpeechRecognition();
-    recog.continuous = true;
-    recog.interimResults = false;
-    recog.lang = 'en-US';
-    recog._final = '';
-    recog.onresult = (e) => {
-      for(let i=e.resultIndex;i<e.results.length;i++){
-        if(e.results[i].isFinal) recog._final += e.results[i][0].transcript + ' ';
-      }
+    const r = new SR();
+    r.continuous = true;
+    r.interimResults = false;
+    r.lang = 'en-US';
+    r._text = '';
+    r.onresult = e => {
+      for(let i=e.resultIndex;i<e.results.length;i++)
+        if(e.results[i].isFinal) r._text += e.results[i][0].transcript + ' ';
     };
-    recog.onerror = ()=>{};
-    recog.onend = ()=>{ if(activeTranscripts[id]===recog){ try{recog.start();}catch(e){} } };
-    recog.start();
-    activeTranscripts[id] = recog;
+    r.onerror = ()=>{};
+    r.onend = ()=>{ if(activeTranscripts[id]===r) try{r.start();}catch(e){} };
+    r.start();
+    activeTranscripts[id] = r;
   }catch(e){}
 }
 
 function stopTranscript(id){
-  const recog = activeTranscripts[id];
-  if(!recog) return '';
-  recog.onend = null;
-  const text = (recog._final||'').trim();
-  try{ recog.stop(); }catch(e){}
+  const r = activeTranscripts[id];
+  if(!r) return '';
+  r.onend = null;
+  const text = (r._text||'').trim();
+  try{ r.stop(); }catch(e){}
   delete activeTranscripts[id];
   return text;
 }
 
 async function startRecording(id){
-  // Turn button red IMMEDIATELY before async ops
-  const btn=document.getElementById('rec-btn-'+id);
-  if(btn){
-    btn.className='rec-btn recording';
-    btn.innerHTML='<span class="rec-dot"></span> ⏺ Recording…';
-    btn.style.cssText='background:var(--red-bg)!important;color:var(--red-txt)!important;border-color:var(--red-txt)!important';
-  }
+  const btn = document.getElementById('rec-btn-'+id);
+  if(btn){ btn.className='rec-btn recording'; btn.innerHTML='<span class="rec-dot"></span> ⏺ Recording…'; btn.style.cssText='background:var(--red-bg)!important;color:var(--red-txt)!important;border-color:var(--red-txt)!important'; }
   try{
-    // Get a fresh stream (reuses permission already granted on login)
-    const stream=await navigator.mediaDevices.getUserMedia({audio:true});
-    // iOS Safari requires no mimeType specified + no timeslice
+    const stream = await navigator.mediaDevices.getUserMedia({audio:true});
     const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
-    const mimeType = isIOS ? '' : (MediaRecorder.isTypeSupported('audio/webm') ? 'audio/webm' : 'audio/mp4');
-    const mrOpts = mimeType ? {mimeType} : {};
-    const mr = new MediaRecorder(stream, mrOpts);
-    const chunks=[];
-    mr.ondataavailable=e=>{if(e.data&&e.data.size>0)chunks.push(e.data);};
-    mr.onstop=async ()=>{
-      const transcript=stopTranscript(id);
-      const blob=new Blob(chunks,{type:mimeType||'audio/webm'});
-      const date=new Date().toLocaleString('en-CA',{year:'numeric',month:'short',day:'numeric',hour:'2-digit',minute:'2-digit'});
-
-      // Reset button immediately
+    const mimeType = !isIOS && MediaRecorder.isTypeSupported('audio/webm') ? 'audio/webm' : '';
+    const mr = new MediaRecorder(stream, mimeType ? {mimeType} : {});
+    const chunks = [];
+    mr.ondataavailable = e => { if(e.data&&e.data.size>0) chunks.push(e.data); };
+    mr.onstop = async () => {
+      const transcript = stopTranscript(id);
+      const blob = new Blob(chunks, {type: mr.mimeType||'audio/webm'});
       stream.getTracks().forEach(t=>t.stop());
       delete activeRecorders[id];
-      const b=document.getElementById('rec-btn-'+id);
-      if(b){b.className='rec-btn';b.innerHTML='<span class="rec-dot"></span> Record voice note';b.style.cssText='';}
-      const timerEl=document.getElementById('rec-timer-'+id);
-      if(timerEl)timerEl.style.display='none';
 
-      // Show temp local playback while uploading
-      const tempUrl=URL.createObjectURL(blob);
-      const q=quotes.find(x=>x.id===id);
-      const recId = 'r'+Date.now(); // stable ID used for both temp and final entry
-      if(q){
-        if(!q.recMeta)q.recMeta=[];
-        q.recMeta.push({id:recId, date, transcript:transcript||'', cloudUrl:'', tempUrl});
-        if(q.recMeta.length>20)q.recMeta=q.recMeta.slice(-20);
-      }
-      await renderRecordingsForQuote(id);
-      toast('⏫ Uploading recording…');
+      // Reset button
+      const b = document.getElementById('rec-btn-'+id);
+      if(b){ b.className='rec-btn'; b.innerHTML='<span class="rec-dot"></span> Record voice note'; b.style.cssText=''; }
+      const timerEl = document.getElementById('rec-timer-'+id);
+      if(timerEl) timerEl.style.display='none';
 
-      // Upload to Cloudinary — this is the permanent storage
+      toast('⏫ Uploading…');
+
+      // Upload directly to Cloudinary
       const cloudUrl = await uploadAudioToCloud(blob);
+      if(!cloudUrl){ toast('Upload failed — check connection'); return; }
 
-      if(cloudUrl){
-        if(q&&q.recMeta){
-          const entry = q.recMeta.find(m=>m.id===recId);
-          if(entry){ entry.cloudUrl=cloudUrl; entry.tempUrl=''; }
-        }
-        // Save locally then push to cloud immediately — block auto-sync for 10s
-        try{ localStorage.setItem('af_q',JSON.stringify(quotes)); }catch(e){}
-        lockSync(15000);
-        clearTimeout(syncTimer);
-        await cloudSet(getSyncData());
-        await renderRecordingsForQuote(id);
-        toast('✓ Recording saved & synced');
-      } else {
-        const blobUrl=URL.createObjectURL(blob);
-        await saveRecordingIDB(id, blobUrl, date, transcript||'');
-        if(q&&q.recMeta){
-          const entry = q.recMeta.find(m=>m.date===date);
-          if(entry) entry.tempUrl='idb';
-        }
-        try{ localStorage.setItem('af_q',JSON.stringify(quotes)); }catch(e){}
-        await renderRecordingsForQuote(id);
-        toast('Recording saved locally (no internet)');
+      // Save to quote's recMeta and push to cloud immediately
+      const q = quotes.find(x=>x.id===id);
+      if(q){
+        if(!q.recMeta) q.recMeta = [];
+        q.recMeta.push({ id:'r'+Date.now(), date:new Date().toLocaleString('en-CA',{year:'numeric',month:'short',day:'numeric',hour:'2-digit',minute:'2-digit'}), transcript, cloudUrl });
+        if(q.recMeta.length>20) q.recMeta = q.recMeta.slice(-20);
       }
-      URL.revokeObjectURL(tempUrl);
+      try{ localStorage.setItem('af_q',JSON.stringify(quotes)); localStorage.setItem('af_last_save',String(Date.now())); }catch(e){}
+      lockSync(30000);
+      clearTimeout(syncTimer);
+      await cloudSet(getSyncData());
+      renderRecordingsForQuote(id);
+      toast('✓ Recording saved');
     };
-    mr.start(); // no timeslice — required for iOS Safari compatibility
-    activeRecorders[id]={mr,startTime:Date.now()};
+    mr.start();
+    activeRecorders[id] = {mr, startTime:Date.now()};
     startTranscript(id);
-    const timerEl=document.getElementById('rec-timer-'+id);
-    if(timerEl)timerEl.style.display='inline';
-    activeRecorders[id].timerInterval=setInterval(()=>{
-      if(!activeRecorders[id])return;
-      const s=Math.floor((Date.now()-activeRecorders[id].startTime)/1000);
-      const el=document.getElementById('rec-timer-'+id);
-      if(el)el.textContent=Math.floor(s/60)+':'+String(s%60).padStart(2,'0');
+    const timerEl = document.getElementById('rec-timer-'+id);
+    if(timerEl) timerEl.style.display='inline';
+    activeRecorders[id].timerInterval = setInterval(()=>{
+      if(!activeRecorders[id]) return;
+      const s = Math.floor((Date.now()-activeRecorders[id].startTime)/1000);
+      const el = document.getElementById('rec-timer-'+id);
+      if(el) el.textContent = Math.floor(s/60)+':'+String(s%60).padStart(2,'0');
     },1000);
   }catch(e){
-    if(btn){btn.className='rec-btn';btn.innerHTML='<span class="rec-dot"></span> Record voice note';btn.style.cssText='';}
+    if(btn){ btn.className='rec-btn'; btn.innerHTML='<span class="rec-dot"></span> Record voice note'; btn.style.cssText=''; }
     toast('Microphone access denied');
   }
 }
+
 function stopRecording(id){
-  if(!activeRecorders[id])return;
+  if(!activeRecorders[id]) return;
   clearInterval(activeRecorders[id].timerInterval);
   activeRecorders[id].mr.stop();
 }
-// deleteRecording replaced by delRecIDB
+
 
 // ── Priority ───────────────────────────────────────────────────────────────
 
@@ -2074,120 +2047,28 @@ function showPeoplePicker(contacts){
     });
   },100);
 }
-function toggleRecTranscript(btn){
-  const text = btn.getAttribute('data-text');
-  let box = btn.nextElementSibling;
-  if(box && box.classList.contains('rec-transcript-box')){
-    box.remove(); return;
-  }
-  box = document.createElement('div');
-  box.className = 'rec-transcript-box';
-  box.style.cssText='width:100%;margin-top:4px;padding:8px 10px;background:var(--surface2);border:1px solid var(--border);border-radius:8px;font-size:12px;color:var(--text2);white-space:pre-wrap;font-family:Sora,sans-serif;grid-column:1/-1';
-  box.textContent = text;
-  // Insert after the rm button (last child of rDiv)
-  btn.parentElement.insertAdjacentElement('afterend', box);
-}
-
-// ── IndexedDB for voice recordings ────────────────────────────────────────
-let idb=null;
-function openIDB(){
-  return new Promise((res,rej)=>{
-    const req=indexedDB.open('andgar_fpe',3);
-    req.onupgradeneeded=e=>{
-      const db=e.target.result;
-      if(!db.objectStoreNames.contains('recordings')){
-        db.createObjectStore('recordings',{keyPath:'id'});
-      }
-    };
-    req.onsuccess=e=>{idb=e.target.result;res(idb);};
-    req.onerror=e=>rej(e);
-  });
-}
-
-async function saveRecordingIDB(quoteId, blobUrl, date, transcript=''){
-  const db=await openIDB();
-  const resp=await fetch(blobUrl);
-  const blob=await resp.blob();
-  const id=quoteId+'_'+Date.now();
-  return new Promise((res,rej)=>{
-    const tx=db.transaction('recordings','readwrite');
-    tx.objectStore('recordings').put({id,quoteId,blob,date,transcript});
-    tx.oncomplete=()=>res(id);
-    tx.onerror=rej;
-  });
-}
-
-async function getRecordingsIDB(quoteId){
-  const db=await openIDB();
-  return new Promise((res,rej)=>{
-    const tx=db.transaction('recordings','readonly');
-    const req=tx.objectStore('recordings').getAll();
-    req.onsuccess=()=>res(req.result.filter(r=>r.quoteId===quoteId));
-    req.onerror=rej;
-  });
-}
-
-async function deleteRecordingIDB(id){
-  const db=await openIDB();
-  return new Promise((res,rej)=>{
-    const tx=db.transaction('recordings','readwrite');
-    tx.objectStore('recordings').delete(id);
-    tx.oncomplete=res;
-    tx.onerror=rej;
-  });
-}
-
-async function renderRecordingsForQuote(quoteId){
-  const el=document.getElementById('recs-'+quoteId);
-  if(!el)return;
+function renderRecordingsForQuote(quoteId){
+  const el = document.getElementById('recs-'+quoteId);
+  if(!el) return;
   const q = quotes.find(x=>x.id===quoteId);
-  const meta = (q&&q.recMeta)||[];
-
-  // Primary source: recMeta (persists across devices via cloud sync)
-  // Each entry has cloudUrl (permanent) or tempUrl (temporary local)
-  let recs = meta.map(m=>({
-    id: m.id, quoteId,
-    cloudUrl: m.cloudUrl||'',
-    tempUrl: m.tempUrl||'',
-    blobUrl: m.cloudUrl||m.tempUrl||'',
-    date: m.date,
-    transcript: m.transcript||'',
-    fromCloud: !!m.cloudUrl
-  }));
-
-  // Also check IDB for any recordings not in recMeta (fallback)
-  let idbRecs = [];
-  try{ idbRecs = await getRecordingsIDB(quoteId); }catch(e){}
-  const metaDates = new Set(meta.map(m=>m.date));
-  idbRecs.filter(r=>!metaDates.has(r.date)).forEach(r=>{
-    recs.push({id:r.id, quoteId, blobUrl:'', blob:r.blob, date:r.date, transcript:r.transcript||''});
-  });
-
-  recs.sort((a,b)=>new Date(a.date)-new Date(b.date));
-  el.innerHTML=recs.map(r=>{
-    // Get best available URL: cloud > tempUrl (if valid http) > IDB blob
-    const isValidUrl = u => u && u.startsWith('http');
-    // Convert any cloudinary webm URL to mp4 for Safari/iPhone compatibility
-    const toMp4 = u => (u && u.includes('cloudinary.com')) ? u.replace(/\.webm$|\.ogg$|\.m4a$/, '.mp4') : u;
-    const url = isValidUrl(r.cloudUrl) ? toMp4(r.cloudUrl)
-              : isValidUrl(r.tempUrl) ? r.tempUrl
-              : isValidUrl(r.blobUrl) ? toMp4(r.blobUrl)
-              : r.blob ? URL.createObjectURL(r.blob) : '';
+  const recs = (q&&q.recMeta||[]).filter(r=>r.cloudUrl&&r.cloudUrl.startsWith('http'));
+  if(!recs.length){ el.innerHTML=''; return; }
+  el.innerHTML = recs.map(r=>{
+    // Convert to mp4 for Safari/iPhone compatibility
+    const url = r.cloudUrl.replace(/\.webm$|\.ogg$|\.m4a$/, '.mp4');
     const hasT = r.transcript && r.transcript.trim();
-    // escape for inline onclick attribute
-    const safeT = hasT ? r.transcript.replace(/\\/g,'\\\\').replace(/'/g,"\\'").replace(/\n/g,'\\n') : '';
+    const safeT = hasT ? encodeURIComponent(r.transcript) : '';
     return `<div class="rec-item" id="reci-${r.id}" style="flex-direction:column;align-items:stretch">
       <div style="display:flex;align-items:center;gap:10px">
         <div style="flex:1;min-width:0">
-        ${url ? `<audio controls crossorigin="anonymous" style="width:100%;height:28px">
-          <source src="${url}" type="audio/mpeg">
-          <source src="${url}" type="audio/webm">
-          <source src="${url}" type="audio/mp4">
-        </audio>` : `<div style="font-size:11px;color:var(--amber-txt);padding:6px 0">⏫ Uploading to cloud…</div>`}
+          <audio controls crossorigin="anonymous" style="width:100%;height:28px">
+            <source src="${url}" type="audio/mpeg">
+            <source src="${url.replace('.mp4','.webm')}" type="audio/webm">
+          </audio>
           <div class="rec-date">${r.date}</div>
         </div>
-        ${hasT?`<span onclick="showRecTranscript(this,'${safeT}')" style="cursor:pointer;font-size:16px;flex-shrink:0;opacity:.75" title="View transcript">📝</span>`:''}
-        <span class="rec-del" onclick="delRecIDB('${r.id}','${quoteId}')">✕</span>
+        ${hasT?`<span onclick="showRecTranscript(this,this.dataset.t)" data-t="${safeT}" style="cursor:pointer;font-size:16px;flex-shrink:0;opacity:.75" title="View transcript">📝</span>`:''}
+        <span class="rec-del" onclick="deleteRecording('${r.id}','${quoteId}')">✕</span>
       </div>
     </div>`;
   }).join('');
@@ -2204,33 +2085,20 @@ function showRecTranscript(btn, text){
   row.appendChild(popup);
 }
 
-async function delRecIDB(id, quoteId){
-  // Remove from IDB
-  await deleteRecordingIDB(id);
-
-  // Remove from recMeta — handle both 'cloud_rXXX' and 'rXXX' formats
+async function deleteRecording(id, quoteId){
   const q = quotes.find(x=>x.id===quoteId);
-  const cleanId = id.startsWith('cloud_') ? id.slice(6) : id;
-  if(q && q.recMeta){
-    q.recMeta = q.recMeta.filter(m=>m.id!==id && m.id!==cleanId);
-  }
-  // Mark as deleted so sync merge never restores it
+  if(!q||!q.recMeta) return;
+  q.recMeta = q.recMeta.filter(m=>m.id!==id);
   markRecDeleted(id);
-  markRecDeleted(cleanId);
-
-  // Push deletion to cloud immediately, block sync for 30s
-  try{ localStorage.setItem('af_q',JSON.stringify(quotes)); }catch(e){}
+  try{ localStorage.setItem('af_q',JSON.stringify(quotes)); localStorage.setItem('af_last_save',String(Date.now())); }catch(e){}
   lockSync(30000);
   clearTimeout(syncTimer);
   await cloudSet(getSyncData());
-
-  await renderRecordingsForQuote(quoteId);
+  renderRecordingsForQuote(quoteId);
   toast('Recording deleted');
 }
 
-// Run
-checkLogin();
-openIDB().catch(e=>console.warn('IDB open failed:',e));
+
 init();
 
 // Register service worker for PWA
