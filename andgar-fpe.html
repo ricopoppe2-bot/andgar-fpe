@@ -455,9 +455,12 @@ body{font-family:'Sora',sans-serif;background:var(--bg);color:var(--text);min-he
 </div>
       <div class="ff"><label class="flabel">Quote number *</label><input class="finput" id="f-number" placeholder="e.g. Q-2025-042"/></div>
     </div>
-    <div class="ff"><label class="flabel">Line Items (Labour, Materials, Fees etc.)</label>
+    <div class="ff"><label class="flabel">Line Items</label>
       <div id="line-items-container" style="display:flex;flex-direction:column;gap:6px;margin-bottom:6px"></div>
-      <button class="abtn" type="button" onclick="addLineItem()" style="width:100%;justify-content:center">+ Add line item</button>
+      <div style="display:flex;gap:6px">
+        <button class="abtn" type="button" onclick="addLineItem()" style="flex:1;justify-content:center">+ Custom item</button>
+        <button class="abtn" type="button" onclick="openInventoryPicker()" style="flex:1;justify-content:center;background:var(--blue-bg);color:var(--blue-txt);border-color:var(--blue-bg)">📦 From inventory</button>
+      </div>
     </div>
     <div class="modal-2col">
       <div class="ff"><label class="flabel">Total Amount ($)</label><input class="finput" id="f-amount" type="number" placeholder="0.00 (or add line items above)" style="font-weight:600"/></div>
@@ -486,6 +489,19 @@ body{font-family:'Sora',sans-serif;background:var(--bg);color:var(--text);min-he
     <div class="modal-foot">
       <button class="btn" onclick="closeModal()">Cancel</button>
       <button class="btn btn-primary" onclick="saveQuote()">Save quote</button>
+    </div>
+  </div>
+</div>
+
+<!-- Inventory picker modal -->
+<div class="overlay" id="inv-overlay" style="display:none" onclick="if(event.target===this)closeInventoryPicker()">
+  <div class="modal" onclick="event.stopPropagation()" style="max-width:560px">
+    <div class="modal-title">📦 Inventory — Add to Quote</div>
+    <input class="finput" id="inv-search" placeholder="Search items…" oninput="renderInventoryPicker(this.value)" style="margin-bottom:12px"/>
+    <div id="inv-category-tabs" style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px"></div>
+    <div id="inv-list" style="display:flex;flex-direction:column;gap:4px;max-height:380px;overflow-y:auto"></div>
+    <div class="modal-foot">
+      <button class="btn" onclick="closeInventoryPicker()">Close</button>
     </div>
   </div>
 </div>
@@ -1403,15 +1419,20 @@ function startTranscript(id){
   try{
     const r = new SR();
     r.continuous = true;
-    r.interimResults = false;
+    r.interimResults = true;
     r.lang = 'en-US';
-    r._text = '';
+    r._final = '';
     r.onresult = e => {
-      for(let i=e.resultIndex;i<e.results.length;i++)
-        if(e.results[i].isFinal) r._text += e.results[i][0].transcript + ' ';
+      // Only process NEW results starting from resultIndex
+      // This prevents re-processing old final results and causing duplicates
+      for(let i=e.resultIndex; i<e.results.length; i++){
+        if(e.results[i].isFinal){
+          r._final += e.results[i][0].transcript + ' ';
+        }
+      }
     };
-    r.onerror = ()=>{};
-    r.onend = ()=>{ if(activeTranscripts[id]===r) try{r.start();}catch(e){} };
+    r.onerror = e => { if(e.error!=='no-speech') console.warn('Speech:',e.error); };
+    r.onend = () => { if(activeTranscripts[id]===r) try{r.start();}catch(e){} };
     r.start();
     activeTranscripts[id] = r;
   }catch(e){}
@@ -1421,7 +1442,7 @@ function stopTranscript(id){
   const r = activeTranscripts[id];
   if(!r) return '';
   r.onend = null;
-  const text = (r._text||'').trim();
+  const text = (r._final||'').trim();
   try{ r.stop(); }catch(e){}
   delete activeTranscripts[id];
   return text;
@@ -1563,6 +1584,131 @@ function renderDashboard(){
 }
 
 // ── Line Items ─────────────────────────────────────────────────────────────
+// ── Inventory ──────────────────────────────────────────────────────────────
+const INVENTORY = [
+  // Labour
+  {cat:'Labour', name:'Fabrication — General (per hr)', unit:'hr', price:95},
+  {cat:'Labour', name:'Welding — MIG (per hr)', unit:'hr', price:110},
+  {cat:'Labour', name:'Welding — TIG (per hr)', unit:'hr', price:130},
+  {cat:'Labour', name:'Welding — Structural (per hr)', unit:'hr', price:125},
+  {cat:'Labour', name:'Machining / Lathe (per hr)', unit:'hr', price:105},
+  {cat:'Labour', name:'CNC Programming (per hr)', unit:'hr', price:120},
+  {cat:'Labour', name:'Assembly (per hr)', unit:'hr', price:85},
+  {cat:'Labour', name:'Installation / Field Work (per hr)', unit:'hr', price:115},
+  {cat:'Labour', name:'Engineering / Design (per hr)', unit:'hr', price:145},
+  {cat:'Labour', name:'Project Management (per hr)', unit:'hr', price:125},
+  {cat:'Labour', name:'Sandblasting (per hr)', unit:'hr', price:90},
+  {cat:'Labour', name:'Painting / Powder Coat (per hr)', unit:'hr', price:85},
+  // Steel & Metal
+  {cat:'Steel & Metal', name:'Steel Plate 1/4" (per sqft)', unit:'sqft', price:8.50},
+  {cat:'Steel & Metal', name:'Steel Plate 3/8" (per sqft)', unit:'sqft', price:12.00},
+  {cat:'Steel & Metal', name:'Steel Plate 1/2" (per sqft)', unit:'sqft', price:16.50},
+  {cat:'Steel & Metal', name:'Steel Tube 2x2x.120 (per ft)', unit:'ft', price:4.20},
+  {cat:'Steel & Metal', name:'Steel Tube 3x3x.188 (per ft)', unit:'ft', price:7.80},
+  {cat:'Steel & Metal', name:'Steel Angle 2x2x1/4 (per ft)', unit:'ft', price:3.50},
+  {cat:'Steel & Metal', name:'Steel I-Beam W6x15 (per ft)', unit:'ft', price:18.00},
+  {cat:'Steel & Metal', name:'Steel Channel C6x10 (per ft)', unit:'ft', price:14.00},
+  {cat:'Steel & Metal', name:'Stainless 304 Sheet 16ga (per sqft)', unit:'sqft', price:14.00},
+  {cat:'Steel & Metal', name:'Stainless 316 Sheet 14ga (per sqft)', unit:'sqft', price:18.50},
+  {cat:'Steel & Metal', name:'Aluminum Sheet 1/8" (per sqft)', unit:'sqft', price:9.00},
+  {cat:'Steel & Metal', name:'Aluminum Extrusion (per ft)', unit:'ft', price:6.50},
+  // Welding Supplies
+  {cat:'Welding Supplies', name:'MIG Wire ER70S-6 (per spool)', unit:'ea', price:65},
+  {cat:'Welding Supplies', name:'TIG Rod ER308L (per lb)', unit:'lb', price:18},
+  {cat:'Welding Supplies', name:'Welding Rod 7018 (per lb)', unit:'lb', price:12},
+  {cat:'Welding Supplies', name:'Shielding Gas — Argon/CO2 (per tank)', unit:'ea', price:95},
+  {cat:'Welding Supplies', name:'Grinding Disc 4.5" (per box)', unit:'box', price:35},
+  {cat:'Welding Supplies', name:'Cut-off Wheel 4.5" (per box)', unit:'box', price:28},
+  {cat:'Welding Supplies', name:'Welding Blanket', unit:'ea', price:45},
+  // Hardware & Fasteners
+  {cat:'Hardware', name:'Bolt Grade 5 3/8" (per 100)', unit:'box', price:22},
+  {cat:'Hardware', name:'Bolt Grade 8 1/2" (per 50)', unit:'box', price:38},
+  {cat:'Hardware', name:'Hex Nut 3/8" (per 100)', unit:'box', price:12},
+  {cat:'Hardware', name:'Flat Washer 3/8" (per 100)', unit:'box', price:10},
+  {cat:'Hardware', name:'Anchor Bolt 1/2"x6" (per 25)', unit:'box', price:45},
+  {cat:'Hardware', name:'Set Screw (per box)', unit:'box', price:18},
+  {cat:'Hardware', name:'Threaded Rod 1/2" (per 10ft)', unit:'ea', price:24},
+  {cat:'Hardware', name:'Weld Nut (per 50)', unit:'box', price:30},
+  // Equipment & Tooling
+  {cat:'Equipment', name:'Plasma Cutting (setup + per cut)', unit:'ea', price:45},
+  {cat:'Equipment', name:'Laser Cutting (per hour)', unit:'hr', price:185},
+  {cat:'Equipment', name:'Press Brake / Bending (per hr)', unit:'hr', price:95},
+  {cat:'Equipment', name:'Saw Cutting (per cut)', unit:'ea', price:15},
+  {cat:'Equipment', name:'Forklift Rental (per day)', unit:'day', price:350},
+  {cat:'Equipment', name:'Crane / Rigging (per day)', unit:'day', price:1200},
+  {cat:'Equipment', name:'Equipment Delivery', unit:'ea', price:250},
+  // Finishing
+  {cat:'Finishing', name:'Primer Coat', unit:'ea', price:120},
+  {cat:'Finishing', name:'Paint — Industrial (per gallon)', unit:'gal', price:85},
+  {cat:'Finishing', name:'Powder Coat — Small Part', unit:'ea', price:65},
+  {cat:'Finishing', name:'Powder Coat — Large Part', unit:'ea', price:180},
+  {cat:'Finishing', name:'Hot-Dip Galvanizing (per lb)', unit:'lb', price:1.85},
+  {cat:'Finishing', name:'Sandblast — Small Part', unit:'ea', price:85},
+  {cat:'Finishing', name:'Sandblast — Large Part', unit:'ea', price:220},
+  // Fees & Other
+  {cat:'Fees', name:'Shop Minimum', unit:'ea', price:250},
+  {cat:'Fees', name:'Rush Fee (25%)', unit:'ea', price:0},
+  {cat:'Fees', name:'Material Handling Fee', unit:'ea', price:75},
+  {cat:'Fees', name:'Drawing / Certification Fee', unit:'ea', price:350},
+  {cat:'Fees', name:'Travel / Mileage (per km)', unit:'km', price:0.85},
+  {cat:'Fees', name:'Permits & Inspections', unit:'ea', price:450},
+  {cat:'Fees', name:'Freight / Shipping', unit:'ea', price:0},
+];
+
+let invActiveCat = 'All';
+
+function openInventoryPicker(){
+  document.getElementById('inv-overlay').style.display='flex';
+  document.getElementById('inv-search').value='';
+  invActiveCat='All';
+  renderInventoryPicker('');
+}
+
+function closeInventoryPicker(){
+  document.getElementById('inv-overlay').style.display='none';
+}
+
+function renderInventoryPicker(search=''){
+  const cats=['All',...new Set(INVENTORY.map(i=>i.cat))];
+  const tabEl=document.getElementById('inv-category-tabs');
+  tabEl.innerHTML=cats.map(c=>`<button onclick="invActiveCat='${c}';renderInventoryPicker(document.getElementById('inv-search').value)" style="padding:5px 12px;border-radius:20px;border:1px solid var(--border2);background:${invActiveCat===c?'var(--navy, #0D1B2A)':'var(--surface)'};color:${invActiveCat===c?'#fff':'var(--text2)'};font-size:12px;cursor:pointer;font-family:Sora,sans-serif">${c}</button>`).join('');
+
+  const q=search.toLowerCase();
+  const filtered=INVENTORY.filter(item=>{
+    const matchCat=invActiveCat==='All'||item.cat===invActiveCat;
+    const matchSearch=!q||item.name.toLowerCase().includes(q)||item.cat.toLowerCase().includes(q);
+    return matchCat&&matchSearch;
+  });
+
+  const list=document.getElementById('inv-list');
+  if(!filtered.length){list.innerHTML='<div style="color:var(--text3);font-size:13px;padding:12px 0">No items found</div>';return;}
+
+  list.innerHTML=filtered.map(item=>`
+    <div style="display:flex;align-items:center;gap:10px;padding:9px 12px;background:var(--surface2);border-radius:8px;border:1px solid var(--border)">
+      <div style="flex:1;min-width:0">
+        <div style="font-size:13px;font-weight:500">${item.name}</div>
+        <div style="font-size:11px;color:var(--text3);font-family:'DM Mono',monospace">${item.cat} · per ${item.unit}</div>
+      </div>
+      <div style="font-size:13px;font-weight:600;flex-shrink:0;min-width:60px;text-align:right">$${item.price>0?item.price.toFixed(2):'—'}</div>
+      <div style="display:flex;align-items:center;gap:4px;flex-shrink:0">
+        <input type="number" value="1" min="0.1" step="0.5" style="width:52px;padding:4px 6px;border:1px solid var(--border2);border-radius:6px;font-size:12px;background:var(--surface);color:var(--text);font-family:Sora,sans-serif" id="inv-qty-${INVENTORY.indexOf(item)}"/>
+        <button onclick="addInventoryItem(${INVENTORY.indexOf(item)})" style="padding:5px 10px;border-radius:7px;border:1px solid var(--blue-bg);background:var(--blue-bg);color:var(--blue-txt);font-size:12px;cursor:pointer;font-family:Sora,sans-serif">Add</button>
+      </div>
+    </div>`).join('');
+}
+
+function addInventoryItem(idx){
+  const item=INVENTORY[idx];
+  const qtyEl=document.getElementById('inv-qty-'+idx);
+  const qty=parseFloat(qtyEl?.value||1)||1;
+  const total=item.price>0?Math.round(item.price*qty*100)/100:0;
+  const label=qty!==1?`${item.name} (×${qty})`:item.name;
+  addLineItem(label, total||'');
+  // Flash the button green briefly
+  const btn=qtyEl?.nextElementSibling;
+  if(btn){btn.textContent='✓ Added';btn.style.background='var(--green-bg)';btn.style.color='var(--green-txt)';btn.style.borderColor='var(--green-bg)';setTimeout(()=>{btn.textContent='Add';btn.style.background='';btn.style.color='';btn.style.borderColor='';},1200);}
+}
+
 function addLineItem(desc='',amt=''){
   const container=document.getElementById('line-items-container');
   if(!container)return;
